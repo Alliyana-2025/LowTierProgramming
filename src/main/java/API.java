@@ -4,11 +4,13 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.util.Map;
 import java.util.*;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+
+import com.google.genai.Client;
+import com.google.genai.types.GenerateContentResponse;
 
 public class API {
 
@@ -38,52 +40,6 @@ public class API {
         String output;
         while ((output = br.readLine()) != null) {
             sb.append(output);
-        }
-
-        conn.disconnect();
-        return sb.toString();
-    }
-
-    /**
-     * Sends a POST request with JSON body and Bearer token authentication.
-     * 
-     * @param apiURL      the URL to send the POST request to
-     * @param bearerToken the bearer token for Authorization header
-     * @param jsonBody    the JSON payload as a string
-     * @return the response body as a String
-     * @throws Exception if the request fails
-     */
-    public String post(String apiURL, String bearerToken, String jsonBody) throws Exception {
-        URL url = new URL(apiURL);
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-
-        // Set HTTP method and headers
-        conn.setRequestMethod("POST");
-        conn.setRequestProperty("Accept", "application/json");
-        conn.setRequestProperty("Content-Type", "application/json");
-        conn.setRequestProperty("Authorization", "Bearer " + bearerToken);
-
-        // Enable sending body
-        conn.setDoOutput(true);
-
-        // Write request body
-        try (OutputStream os = conn.getOutputStream()) {
-            byte[] input = jsonBody.getBytes("utf-8");
-            os.write(input, 0, input.length);
-        }
-
-        // Check for success
-        int responseCode = conn.getResponseCode();
-        if (responseCode != 200 && responseCode != 201) {
-            throw new RuntimeException("POST failed. HTTP error code: " + responseCode);
-        }
-
-        // Read response
-        BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "utf-8"));
-        StringBuilder sb = new StringBuilder();
-        String responseLine;
-        while ((responseLine = br.readLine()) != null) {
-            sb.append(responseLine.trim());
         }
 
         conn.disconnect();
@@ -122,31 +78,16 @@ public class API {
             String summaryForecast = forecast.getString("summary_forecast");
             System.out.println("GET Response: "+summaryForecast);
 
-            // --- Example POST request: Perform sentiment analysis using HuggingFace model ---
-            String journalInput = sc.nextLine();
-            sc.close();
-            String postUrl = "https://router.huggingface.co/hf-inference/models/distilbert/distilbert-base-uncased-finetuned-sst-2-english";
-
-            // Safely get bearer token
-            String bearerToken = env.get("BEARER_TOKEN");
-            if (bearerToken == null || bearerToken.isEmpty()) {
-                System.err.println("Error: BEARER_TOKEN is not set in the environment.");
-                return;
-            }
-
-            // Format JSON body
-            String jsonBody = "{\"inputs\": \"" + journalInput + "\"}";
-
-            // Call POST
-            String postResponse = api.post(postUrl, bearerToken, jsonBody);
-
-            JSONArray outerArray = new JSONArray(postResponse);
-            JSONArray innerArray = outerArray.getJSONArray(0);
-            JSONObject topResult = innerArray.getJSONObject(0);
-            String topLabel = topResult.getString("label");
+            // ATTEMPTING GEMINI CALLS INSTEAD OF HUGGINGFACE
+            Client client = Client.builder().apiKey(env.get("GEMINI_TOKEN")).build();
             
-            System.out.println("Sentiment Analysis Response: "+topLabel);
+            String journalInput = sc.nextLine();
+            String prompt = "Analyze the sentiment of this sentence, return either POSITIVE or NEGATIVE only. Attach the word SARCASM in parentheses next to the return values if applicable.\n"+journalInput;
 
+            GenerateContentResponse responseGemini = client.models.generateContent("gemini-2.5-flash", prompt, null);
+            System.out.println("Gemini response: "+responseGemini.text());
+            sc.close();
+            client.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
