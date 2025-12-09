@@ -1,15 +1,7 @@
 {
-    "java.vmargs": [
-        "--module-path",
-        "\"${auto:maven.classpath}\"",
-        "--add-modules",
-        "javafx.controls,javafx.fxml,javafx.graphics"
-    ],
-    
-    "java.mainClass": "logic.LeeyaWelcomePage",
-
-    "java.project.sourcePaths": ["src"],
-    "java.project.outputPath": "bin",
+    // These settings establish standard project paths for the VS Code Java extension.
+    "java.project.sourcePaths": ["src/main/java"],
+    "java.project.outputPath": "target/classes", 
     "java.project.referencedLibraries": [
         "lib/**/*.jar"
     ],
