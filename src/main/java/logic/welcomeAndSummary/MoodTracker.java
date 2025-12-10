@@ -1,5 +1,5 @@
 
-package welcomelogic;
+package logic.welcomeAndSummary;
 
 import java.util.ArrayList;
 import java.util.List;
