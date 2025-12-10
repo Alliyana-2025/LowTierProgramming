@@ -1,4 +1,4 @@
-package logic.yana;
+package logic.loginDatabase;
 
 import java.sql.Connection;
 import java.sql.DriverManager;

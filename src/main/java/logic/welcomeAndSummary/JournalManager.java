@@ -1,5 +1,5 @@
 
-package welcomelogic;
+package logic.welcomeAndSummary;
 
 import java.util.HashMap;
 import java.util.Map;

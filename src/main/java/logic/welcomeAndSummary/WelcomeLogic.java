@@ -1,4 +1,4 @@
-package welcomelogic;
+package logic.welcomeAndSummary;
 
 import java.util.Scanner;
 
