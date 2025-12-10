@@ -1,4 +1,4 @@
-package logic.yana;
+package logic.loginDatabase;
 
 public class DatabaseConfig {
     public static final String DB_URL = "jdbc:mysql://localhost:3306/user_registration_db";

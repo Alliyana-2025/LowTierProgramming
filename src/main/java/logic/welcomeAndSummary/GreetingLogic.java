@@ -1,5 +1,4 @@
-
-package welcomelogic;
+package logic.welcomeAndSummary;
 
 import java.time.LocalTime;
 import java.time.ZoneId;

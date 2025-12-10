@@ -1,3 +1,5 @@
+package logic.loginDatabase;
+
 import java.util.Scanner;
 
 public class MainApplication {
