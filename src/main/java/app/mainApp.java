@@ -10,8 +10,8 @@ import UI.*;
 public class mainApp {
     public static void main(String[] args) {
 
-        //LoginPage loginPage = new LoginPage();
-        //loginPage.run();
+        LoginPage loginPage = new LoginPage();
+        loginPage.run();
 
         WelcomeLogicMain welcomeLogic = new WelcomeLogicMain();
         welcomeLogic.run();

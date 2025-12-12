@@ -9,8 +9,9 @@ public class LoginPage {
         Scanner scanner = new Scanner(System.in);
         
         System.out.println("=== User Authentication System ===");
-        
-        while (true) {
+
+        boolean loggedIn = false;
+        while (!loggedIn) {
             System.out.println("\nChoose an option:");
             System.out.println("1. Login");
             System.out.println("2. Register");
@@ -30,6 +31,7 @@ public class LoginPage {
                     if (auth.authenticate(loginId, loginPassword)) {
                         System.out.println("Login successful!");
                         System.out.println("Welcome! You can now access the main application.");
+                        loggedIn = true;
                     } else {
                         System.out.println("Login failed! Invalid credentials.");
                     }
