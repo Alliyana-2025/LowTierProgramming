@@ -4,7 +4,7 @@ import java.util.Scanner;
 import logic.welcomelogic.WeeklySummaryLogic;
 
 public class WelcomeLogicMain {
-    public static void main(String[] args) {
+    public void run() {
 
         Scanner input = new Scanner(System.in);
 

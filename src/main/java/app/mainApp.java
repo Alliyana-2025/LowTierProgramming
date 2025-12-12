@@ -1,22 +1,19 @@
 package app;
 import java.util.*;
 import API.API;
+import logic.loginDatabase.*;
+import logic.welcomeAndSummary.*;
+import logic.welcomelogic.*;
+import UI.*;
+
 
 public class mainApp {
     public static void main(String[] args) {
-        API api = new API();
-        Scanner sc = new Scanner(System.in);
 
-        System.out.print("Enter location: ");
-        String loc = sc.nextLine();
-        String weather = api.weatherAPI(loc);
-        System.out.println(weather);
+        //LoginPage loginPage = new LoginPage();
+        //loginPage.run();
 
-        System.out.print("Enter journal: ");
-        String journal = sc.nextLine();
-        String sentiment = api.geminiAPI(journal);
-        System.out.println(sentiment);
-
-        sc.close();
+        WelcomeLogicMain welcomeLogic = new WelcomeLogicMain();
+        welcomeLogic.run();
     }
 }
