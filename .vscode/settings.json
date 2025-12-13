@@ -1,8 +1,10 @@
 {
-    "java.project.sourcePaths": ["src"],
-    "java.project.outputPath": "bin",
+    // These settings establish standard project paths for the VS Code Java extension.
+    "java.project.sourcePaths": ["src/main/java"],
+    "java.project.outputPath": "target/classes", 
     "java.project.referencedLibraries": [
         "lib/**/*.jar"
     ],
-    "java.configuration.updateBuildConfiguration": "interactive"
+    "java.configuration.updateBuildConfiguration": "interactive",
+    "java.compile.nullAnalysis.mode": "automatic"
 }
