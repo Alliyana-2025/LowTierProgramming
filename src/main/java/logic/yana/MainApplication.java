@@ -1,3 +1,4 @@
+package logic.yana;
 import java.util.Scanner;
 
 public class MainApplication {

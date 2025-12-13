@@ -1,3 +1,4 @@
+package logic.yana;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
