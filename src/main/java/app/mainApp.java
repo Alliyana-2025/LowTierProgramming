@@ -11,9 +11,11 @@ public class mainApp {
     public static void main(String[] args) {
 
         LoginPage loginPage = new LoginPage();
-        loginPage.run();
+        String username = loginPage.run();
 
-        WelcomeLogicMain welcomeLogic = new WelcomeLogicMain();
+        if (username == null) return;
+
+        WelcomeLogicMain welcomeLogic = new WelcomeLogicMain(username);
         welcomeLogic.run();
     }
 }

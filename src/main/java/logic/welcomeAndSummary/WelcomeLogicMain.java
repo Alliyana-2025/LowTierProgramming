@@ -2,18 +2,21 @@ package logic.welcomeAndSummary;
 
 import java.util.Scanner;
 import logic.welcomelogic.WeeklySummaryLogic;
+import logic.loginDatabase.*;
 
 public class WelcomeLogicMain {
+    private String username;
+
+    public WelcomeLogicMain(String username) {
+        this.username = username;
+    }
+
     public void run() {
 
         Scanner input = new Scanner(System.in);
 
-        // --- Ask user for their name ---
-        System.out.print("Enter your name: ");
-        String userName = input.nextLine();
-
         // --- Greeting Logic ---
-        String greeting = GreetingLogic.getGreeting(userName);
+        String greeting = GreetingLogic.getGreeting(username);
         System.out.println("\n" + greeting + "\n");
 
         // --- Journal Manager Example ---

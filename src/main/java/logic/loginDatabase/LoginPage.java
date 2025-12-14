@@ -1,10 +1,11 @@
 package logic.loginDatabase;
 
 import java.util.Scanner;
+import logic.welcomeAndSummary.WelcomeLogicMain;
 
 public class LoginPage {
     
-    public void run() {
+    public String run() {
         UserAuthenticator auth = new UserAuthenticator();
         Scanner scanner = new Scanner(System.in);
         
@@ -34,9 +35,11 @@ public class LoginPage {
                         System.out.println("Login successful!");
                         System.out.println("Welcome, " + username+ "! You can now access the main application.");
                         loggedIn = true;
+                        return loginId;
                     } else {
                         System.out.println("Login failed! Invalid credentials.");
                     }
+
                     break;
                     
                 case 2: // Register
@@ -67,6 +70,6 @@ public class LoginPage {
                 default:
                     System.out.println("Invalid choice. Please try again.");
             }
-        }
+        } return null;
     }
 }
