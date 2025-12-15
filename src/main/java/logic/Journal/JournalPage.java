@@ -1,15 +1,17 @@
+package logic.Journal;
+
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.io.*;
 
 public class JournalPage {
-    private static final String JOURNAL_FILE = "journals.txt";
+    private static final String JOURNAL_FILE = "data/journals.txt";
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private static Map<LocalDate, String> journals = new TreeMap<>();
     private static Scanner scanner = new Scanner(System.in);
 
-    public static void main(String[] args) {
+    public void run() {
         loadJournals();
         showJournalsPage();
     }

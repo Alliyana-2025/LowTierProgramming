@@ -18,7 +18,7 @@ public class mainApp {
         if (username == null) return;
 
         WelcomeLogicMain welcomeLogic = new WelcomeLogicMain(username);
-        welcomeLogic.run();
+        welcomeLogic.run(sc);
         
         System.out.print("Enter your location: ");
         String loc = sc.nextLine();

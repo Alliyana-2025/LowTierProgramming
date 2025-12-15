@@ -1,6 +1,8 @@
 package logic.welcomeAndSummary;
 
 import logic.welcomelogic.WeeklySummaryLogic;
+import logic.Journal.*;
+import java.util.Scanner;
 
 public class WelcomeLogicMain {
     private String username;
@@ -9,35 +11,50 @@ public class WelcomeLogicMain {
         this.username = username;
     }
 
-    public void run() {
+    public void run(Scanner sc) {
+        JournalPage journalPage = new JournalPage();
 
         // --- Greeting Logic ---
         String greeting = GreetingLogic.getGreeting(username);
         System.out.println("\n" + greeting + "\n");
 
-        // --- Journal Manager Example ---
-        JournalManager journal = new JournalManager();
-        journal.createOrUpdateJournal("First Entry", "Today I started my smart journal!");
-        System.out.println("Viewing Journal: " + journal.viewJournal("First Entry") + "\n");
+        System.out.println("Choose an option:\n1. Journal Page\n2. Weekly Summary");
+        boolean running = true;
 
-        // --- Mood Tracker Example ---
-        MoodTracker mood = new MoodTracker();
-        mood.addMood("Happy");
-        mood.addMood("Tired");
+        while (running) {
+            System.out.print("Enter choice: ");
+            String input = sc.nextLine();
+            int option = Integer.parseInt(input);
+            switch (option) {
+                case 1: {
+                    running = false;
+                    journalPage.run();
+                    break;
+                }
+                case 2: {
+                    MoodTracker mood = new MoodTracker();
+                    mood.addMood("Happy");
+                    mood.addMood("Tired");
 
-        System.out.println("Mood History: " + mood.getWeeklySummary() + "\n");
+                    System.out.println("Mood History: " + mood.getWeeklySummary() + "\n");
 
-        // --- Weekly Summary Page (Weather + Mood for 7 days) ---
-        WeeklySummaryLogic summary = new WeeklySummaryLogic();
-        summary.addDailyRecord("Sunny", "Happy");
-        summary.addDailyRecord("Rainy", "Tired");
-        summary.addDailyRecord("Cloudy", "Relaxed");
-        summary.addDailyRecord("Windy", "Stressed");
-        summary.addDailyRecord("Hot", "Energetic");
-        summary.addDailyRecord("Sunny", "Calm");
-        summary.addDailyRecord("Stormy", "Anxious");
+                    // --- Weekly Summary Page (Weather + Mood for 7 days) ---
+                    WeeklySummaryLogic summary = new WeeklySummaryLogic();
+                    summary.addDailyRecord("Sunny", "Happy");
+                    summary.addDailyRecord("Rainy", "Tired");
+                    summary.addDailyRecord("Cloudy", "Relaxed");
+                    summary.addDailyRecord("Windy", "Stressed");
+                    summary.addDailyRecord("Hot", "Energetic");
+                    summary.addDailyRecord("Sunny", "Calm");
+                    summary.addDailyRecord("Stormy", "Anxious");
 
-        System.out.println(summary.getWeeklySummary());
-
+                    System.out.println(summary.getWeeklySummary());
+                }
+                default: {
+                    System.out.println("Invalid input");
+                    break;
+                }
+            }
+        }
     }
 }
