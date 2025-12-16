@@ -7,11 +7,6 @@ import java.net.URI;
 import java.net.URLEncoder;
 import java.util.*;
 
-import javax.management.RuntimeErrorException;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
-
 import com.google.genai.Client;
 import com.google.genai.types.GenerateContentResponse;
 import com.google.gson.*;
