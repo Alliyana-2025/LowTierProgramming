@@ -2,7 +2,12 @@ package logic.welcomeAndSummary;
 
 import logic.welcomelogic.WeeklySummaryLogic;
 import logic.Journal.*;
+
+import java.util.List;
 import java.util.Scanner;
+
+import API.WeatherAPI;
+import API.geminiAPI;
 
 public class WelcomeLogicMain {
     private String username;
@@ -10,13 +15,17 @@ public class WelcomeLogicMain {
     public WelcomeLogicMain(String username) {
         this.username = username;
     }
+    // --- Greeting Logic ---
 
     public void run(Scanner sc) {
-        JournalPage journalPage = new JournalPage();
 
-        // --- Greeting Logic ---
         String greeting = GreetingLogic.getGreeting(username);
         System.out.println("\n" + greeting + "\n");
+
+        WeatherAPI api = new WeatherAPI();
+        api.run(sc);
+        
+        JournalPage journalPage = new JournalPage();
 
         System.out.println("Choose an option:\n1. Journal Page\n2. Weekly Summary");
         boolean running = true;
