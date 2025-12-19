@@ -6,7 +6,7 @@ import java.util.*;
 import java.io.*;
 
 public class JournalPage {
-    private static final String JOURNAL_FILE = "data/journals.txt";
+    private static final String JOURNAL_FILE = System.getProperty("user.home") + File.separator + "LowTierProgramming" + File.separator + "data" + File.separator + "journals.txt";
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private static Map<LocalDate, String> journals = new TreeMap<>();
     private static Scanner scanner = new Scanner(System.in);
