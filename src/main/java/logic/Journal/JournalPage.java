@@ -11,7 +11,7 @@ public class JournalPage {
     private static Map<LocalDate, String> journals = new TreeMap<>();
     private static Scanner scanner = new Scanner(System.in);
 
-    public static void main(String[] args) {
+    public void run() {
         loadJournals();
         showJournalsPage();
     }
