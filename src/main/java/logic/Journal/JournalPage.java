@@ -7,7 +7,7 @@ import java.io.*;
 import logic.welcomeAndSummary.*;
 
 public class JournalPage {
-    private static final String JOURNAL_FILE = System.getProperty("user.home") + File.separator + "LowTierProgramming" + File.separator + "data" + File.separator + "journals.txt";
+    private static final String JOURNAL_FILE = "data" + File.separator + "journals.txt";
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private static Map<LocalDate, String> journals = new TreeMap<>();
 
@@ -57,6 +57,8 @@ public class JournalPage {
     }
 
     private static void saveJournals() {
+        File file = new File(JOURNAL_FILE);
+        file.getParentFile().mkdirs();
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(JOURNAL_FILE))) {
             for (Map.Entry<LocalDate, String> entry : journals.entrySet()) {
                 writer.write("DATE:" + entry.getKey().format(DATE_FORMATTER));
@@ -114,11 +116,11 @@ public class JournalPage {
                 int choice = Integer.parseInt(input);
 
                 if (choice == -1){
-                    WelcomeLogicMain loginPage = new WelcomeLogicMain(username);
-                    loginPage.run(scanner);
+                    WelcomeLogicMain welcomePage = new WelcomeLogicMain(username);
+                    welcomePage.run(scanner);
                 }
 
-                if (choice < 1 || choice > dates.size()) {
+                if ((choice != -1 && choice < 1)  || choice > dates.size()) {
                     System.out.println("Invalid selection. Please try again.");
                     continue;
                 }

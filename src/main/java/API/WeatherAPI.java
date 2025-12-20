@@ -141,8 +141,14 @@ public class WeatherAPI {
                 System.out.println((i+1) + ". " + locations.get(i));
             }
 
-            System.out.print("\nEnter choice: ");
-            choice = Integer.parseInt(sc.nextLine());
+            while (true) {
+                System.out.print("\nEnter choice: ");
+                choice = Integer.parseInt(sc.nextLine());
+                if (choice > locations.size()) {
+                    System.out.print("Invalid input. Try again");
+                    continue;
+                } else break;
+            }
         }
         GeoLocation selected = locations.get(choice-1);
         WeatherResponse response = getWeather(selected.lat, selected.lon);

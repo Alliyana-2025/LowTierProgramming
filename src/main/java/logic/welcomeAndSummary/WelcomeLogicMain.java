@@ -1,7 +1,10 @@
 package logic.welcomeAndSummary;
 
-import logic.welcomelogic.WeeklySummaryLogic;
 import logic.Journal.*;
+import logic.summaryLogic.SummaryLogic;
+
+import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.Scanner;
 import API.WeatherAPI;
 
@@ -15,13 +18,25 @@ public class WelcomeLogicMain {
 
     public void run(Scanner sc) {
 
-        String greeting = GreetingLogic.getGreeting(username);
+        LocalTime timeNow = LocalTime.now(ZoneId.of("GMT+8"));
+
+        String greeting;
+
+        if (timeNow.isBefore(LocalTime.NOON)) {
+            greeting = "Good Morning";
+        } else if (timeNow.isBefore(LocalTime.of(17, 0))) {
+            greeting = "Good Afternoon";
+        } else {
+            greeting = "Good Evening";
+        }
+
         System.out.println("\n" + greeting + "\n");
 
         WeatherAPI api = new WeatherAPI();
         api.run(sc);
 
         JournalPage journalPage = new JournalPage();
+        SummaryLogic summaryPage = new SummaryLogic();
 
         System.out.println("Choose an option:\n1. Journal Page\n2. Weekly Summary\n3. Exit App");
         boolean running = true;
@@ -37,23 +52,10 @@ public class WelcomeLogicMain {
                     break;
                 }
                 case 2: {
-                    MoodTracker mood = new MoodTracker();
-                    mood.addMood("Happy");
-                    mood.addMood("Tired");
-
-                    System.out.println("Mood History: " + mood.getWeeklySummary() + "\n");
-
-                    // --- Weekly Summary Page (Weather + Mood for 7 days) ---
-                    WeeklySummaryLogic summary = new WeeklySummaryLogic();
-                    summary.addDailyRecord("Sunny", "Happy");
-                    summary.addDailyRecord("Rainy", "Tired");
-                    summary.addDailyRecord("Cloudy", "Relaxed");
-                    summary.addDailyRecord("Windy", "Stressed");
-                    summary.addDailyRecord("Hot", "Energetic");
-                    summary.addDailyRecord("Sunny", "Calm");
-                    summary.addDailyRecord("Stormy", "Anxious");
-
-                    System.out.println(summary.getWeeklySummary());
+                    running = false;
+                    summaryPage.run(username, sc);
+                    break;
+                    
                 }
                 case 3: {
                     System.out.println("See you again next time!");
