@@ -4,10 +4,11 @@ import java.io.*;
 import java.util.*;
 import API.geminiAPI;
 import logic.welcomeAndSummary.WelcomeLogicMain;
+import logic.loginDatabase.UserSession;
 
 public class SummaryLogic {
 
-    public void run(String username, Scanner sc) {
+    public void run(UserSession session, String username, Scanner sc) {
         List<String> lastSevenEntries = readLastSevenEntries("data"+File.separator+"journals.txt");
         if (lastSevenEntries.isEmpty()) {
             System.out.println("No journal entries found.");
@@ -18,7 +19,7 @@ public class SummaryLogic {
             combinedEntries.append(entry).append("\n---\n");
         }
 
-        String prompt = "Write a short summary of the user's mood throughout the week using these entries: \n" + combinedEntries;
+        String prompt = "Write a short summary of the user's mood for the week using these entries. Suggest improvements that the user can implement to improve their mood and coming weeks. Write in less than 100 words. \n" + combinedEntries;
 
         geminiAPI api = new geminiAPI();
         String response = api.geminiResponse(prompt, combinedEntries.toString());
@@ -29,7 +30,7 @@ public class SummaryLogic {
         int ret = Integer.parseInt(sc.nextLine());
         if (ret == -1) {
             WelcomeLogicMain welcomePage = new WelcomeLogicMain(username);
-            welcomePage.run(sc);
+            welcomePage.run(session, sc);
         }
         else throw new RuntimeException("Invalid input!!!");
     }

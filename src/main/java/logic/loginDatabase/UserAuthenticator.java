@@ -65,11 +65,56 @@ public class UserAuthenticator {
         
         return null;
     }
+
+    public double getLatitude(String emailOrUsername) {
+        String query = "SELECT latitude FROM users WHERE email = ? OR username = ?";
+
+        try (Connection conn = dbManager.getConnection();
+            PreparedStatement pstmt = conn.prepareStatement(query)) {
+
+            pstmt.setString(1, emailOrUsername);
+            pstmt.setString(2, emailOrUsername);
+            
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getDouble("latitude");
+                }
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Database error retrieving latitude");
+            e.printStackTrace();
+        }
+
+        return 0;
+    }
+
+    public double getLongitude(String emailOrUsername) {
+        String query = "SELECT longitude FROM users WHERE email = ? OR username = ?";
+
+        try (Connection conn = dbManager.getConnection();
+            PreparedStatement pstmt = conn.prepareStatement(query)) {
+
+            pstmt.setString(1, emailOrUsername);
+            pstmt.setString(2, emailOrUsername);
+            
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getDouble("longitude");
+                }
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Database error retrieving longitude");
+            e.printStackTrace();
+        }
+
+        return 0;
+    }
     
     // Updated registerUser method with all parameters
     public void registerUser(String username, String email, String password, 
-                             String state, String country, String gender, 
-                             String dateOfBirth, String phoneNumber) {
+                             String gender, String dateOfBirth, double latitude, double longitude) {
         
         String hashedPassword = PasswordHasher.hashPassword(password);
         
@@ -104,7 +149,7 @@ public class UserAuthenticator {
         }
         
         // 6. Insert new user into database with all details
-        String query = "INSERT INTO users (username, email, password, state, country, gender, date_of_birth, phone_number) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        String query = "INSERT INTO users (username, email, password, gender, date_of_birth, latitude, longitude) VALUES (?, ?, ?, ?, ?, ?, ?)";
         
         try (Connection conn = dbManager.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(query)) {
@@ -112,19 +157,17 @@ public class UserAuthenticator {
             pstmt.setString(1, username);
             pstmt.setString(2, email);
             pstmt.setString(3, hashedPassword);
-            pstmt.setString(4, state);
-            pstmt.setString(5, country);
-            pstmt.setString(6, gender);
+            pstmt.setString(4, gender);
+            pstmt.setDouble(6, latitude);
+            pstmt.setDouble(7, longitude);
             
             // Convert String date to SQL Date
             if (dateOfBirth != null && !dateOfBirth.trim().isEmpty()) {
                 java.sql.Date sqlDate = java.sql.Date.valueOf(dateOfBirth);
-                pstmt.setDate(7, sqlDate);
+                pstmt.setDate(5, sqlDate);
             } else {
-                pstmt.setNull(7, java.sql.Types.DATE);
+                pstmt.setNull(5, java.sql.Types.DATE);
             }
-            
-            pstmt.setString(8, phoneNumber);
             
             int rowsAffected = pstmt.executeUpdate();
             if (rowsAffected > 0) {

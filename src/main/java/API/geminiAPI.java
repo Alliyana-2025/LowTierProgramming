@@ -11,7 +11,6 @@ public class geminiAPI {
         Map<String, String> env = EnvLoader.loadEnv("data/.env");
 
         try {
-            // ATTEMPTING GEMINI CALLS INSTEAD OF HUGGINGFACE
             Client client = Client.builder().apiKey(env.get("GEMINI_TOKEN")).build();
             
             GenerateContentResponse responseGemini = client.models.generateContent("gemini-2.5-flash", prompt, null);

@@ -7,6 +7,7 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.Scanner;
 import API.WeatherAPI;
+import logic.loginDatabase.*;
 
 public class WelcomeLogicMain {
     private String username;
@@ -16,7 +17,7 @@ public class WelcomeLogicMain {
     }
     // --- Greeting Logic ---
 
-    public void run(Scanner sc) {
+    public void run(UserSession session, Scanner sc) {
 
         LocalTime timeNow = LocalTime.now(ZoneId.of("GMT+8"));
 
@@ -33,7 +34,7 @@ public class WelcomeLogicMain {
         System.out.println("\n" + greeting + "\n");
 
         WeatherAPI api = new WeatherAPI();
-        api.run(sc);
+        api.displayWeather(session);
 
         JournalPage journalPage = new JournalPage();
         SummaryLogic summaryPage = new SummaryLogic();
@@ -48,12 +49,12 @@ public class WelcomeLogicMain {
             switch (option) {
                 case 1: {
                     running = false;
-                    journalPage.run(username, sc);
+                    journalPage.run(session, username, sc);
                     break;
                 }
                 case 2: {
                     running = false;
-                    summaryPage.run(username, sc);
+                    summaryPage.run(session, username, sc);
                     break;
                     
                 }

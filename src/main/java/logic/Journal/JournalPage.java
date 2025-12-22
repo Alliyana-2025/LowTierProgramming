@@ -5,15 +5,16 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.io.*;
 import logic.welcomeAndSummary.*;
+import logic.loginDatabase.*;
 
 public class JournalPage {
     private static final String JOURNAL_FILE = "data" + File.separator + "journals.txt";
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private static Map<LocalDate, String> journals = new TreeMap<>();
 
-    public void run(String username, Scanner scanner) {
+    public void run(UserSession session, String username, Scanner scanner) {
         loadJournals(scanner);
-        showJournalsPage(username, scanner);
+        showJournalsPage(session, username, scanner);
     }
 
     private static void loadJournals(Scanner scanner) {
@@ -73,7 +74,7 @@ public class JournalPage {
         }
     }
 
-    private static void showJournalsPage(String username, Scanner scanner) {
+    private static void showJournalsPage(UserSession session, String username, Scanner scanner) {
         while (true) {
             System.out.println("\nJournals Page");
             System.out.println("===");
@@ -117,7 +118,7 @@ public class JournalPage {
 
                 if (choice == -1){
                     WelcomeLogicMain welcomePage = new WelcomeLogicMain(username);
-                    welcomePage.run(scanner);
+                    welcomePage.run(session, scanner);
                 }
 
                 if ((choice != -1 && choice < 1)  || choice > dates.size()) {
