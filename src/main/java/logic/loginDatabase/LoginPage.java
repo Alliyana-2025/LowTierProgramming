@@ -28,16 +28,14 @@ public class LoginPage {
                     String loginPassword = sc.nextLine();
                     
                     if (auth.authenticate(loginId, loginPassword)) {
-                        
                         String username = auth.getUsername(loginId); //get username from database
                         System.out.println("Login successful!");
-                        System.out.println("Welcome, " + username+ "! You can now access the main application.");
+                        System.out.println("Welcome, " + username + "! You can now access the main application.");
                         loggedIn = true;
                         return loginId;
                     } else {
                         System.out.println("Login failed! Invalid credentials.");
                     }
-
                     break;
                     
                 case 2: // Register
@@ -48,14 +46,32 @@ public class LoginPage {
                     System.out.print("Enter password: ");
                     String password = sc.nextLine();
                     
-                    //password confrimation
+                    // Password confirmation
                     System.out.print("Confirm password: ");
                     String confirmPassword = sc.nextLine();
                     if (!password.equals(confirmPassword)) {
-                    System.out.println("Passwords do not match! Please try again.");
-                    break;  
+                        System.out.println("Passwords do not match! Please try again.");
+                        break;  
                     }
-                    auth.registerUser(username, email, password);
+                    
+                    // Additional user details
+                    System.out.print("Enter your state: ");
+                    String state = sc.nextLine();
+                    
+                    System.out.print("Enter your country: ");
+                    String country = sc.nextLine();
+                    
+                    System.out.print("Enter gender (Male/Female/Other): ");
+                    String gender = sc.nextLine();
+                    
+                    System.out.print("Enter date of birth (YYYY-MM-DD): ");
+                    String dateOfBirth = sc.nextLine();
+                    
+                    System.out.print("Enter phone number: ");
+                    String phoneNumber = sc.nextLine();
+                    
+                    // Call the updated registerUser method with all details
+                    auth.registerUser(username, email, password, state, country, gender, dateOfBirth, phoneNumber);
                     break;
                     
                 case 3: // Exit
@@ -67,6 +83,7 @@ public class LoginPage {
                 default:
                     System.out.println("Invalid choice. Please try again.");
             }
-        } return null;
+        } 
+        return null;
     }
 }
