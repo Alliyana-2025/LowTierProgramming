@@ -21,7 +21,13 @@ public class LoginPage {
             System.out.print("Enter choice: ");
             
             String input = sc.nextLine();
-            int choice = Integer.parseInt(input);
+            int choice;
+            try {
+                choice = Integer.parseInt(input);
+            } catch (NumberFormatException e) {
+                System.out.println("Please enter a valid number.");
+                continue;
+            }
             
             switch (choice) {
                 case 1: // Login
@@ -31,14 +37,15 @@ public class LoginPage {
                     String loginPassword = sc.nextLine();
                     
                     if (auth.authenticate(loginId, loginPassword)) {
-                        String username = auth.getUsername(loginId);
-                        double lat = auth.getLatitude(loginId);
-                        double lon = auth.getLongitude(loginId);
-                        System.out.println("Login successful!");
-                        System.out.println("Welcome, " + username + "! You can now access the main application.");
-                        loggedIn = true;
-
-                        return new UserSession(username, lat, lon);
+                        UserSession session = auth.getUserData(loginId);
+                        
+                        if (session != null) {
+                            System.out.println("Login successful!");
+                            loggedIn = true;
+                            return session;
+                        } else {
+                            System.out.println("Login failed! User data not found.");
+                        }
                     } else {
                         System.out.println("Login failed! Invalid credentials.");
                     }
