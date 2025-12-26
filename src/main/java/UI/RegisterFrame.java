@@ -9,7 +9,7 @@ public class RegisterFrame extends JFrame {
 
     public RegisterFrame() {
         setTitle("Register");
-        setSize(420, 430);
+        setSize(420, 560);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
 
@@ -26,70 +26,86 @@ public class RegisterFrame extends JFrame {
         title.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         // ===== USERNAME =====
-        JLabel userLabel = new JLabel("Username");
-        userLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-
-        JTextField username = new JTextField();
-        username.setMaximumSize(new Dimension(260, 35));
-        username.setAlignmentX(Component.CENTER_ALIGNMENT);
+        JTextField username = createField("Username", card);
 
         // ===== EMAIL =====
-        JLabel emailLabel = new JLabel("Email");
-        emailLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-
-        JTextField email = new JTextField();
-        email.setMaximumSize(new Dimension(260, 35));
-        email.setAlignmentX(Component.CENTER_ALIGNMENT);
+        JTextField email = createField("Email", card);
 
         // ===== PASSWORD =====
-        JLabel passLabel = new JLabel("Password");
-        passLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-
         JPasswordField password = new JPasswordField();
-        password.setMaximumSize(new Dimension(260, 35));
-        password.setAlignmentX(Component.CENTER_ALIGNMENT);
+        addLabeledField("Password", password, card);
+
+        // ===== GENDER =====
+        JTextField gender = createField("Gender", card);
+
+        // ===== DATE OF BIRTH =====
+        JTextField dob = createField("Date of Birth (YYYY-MM-DD)", card);
+
+        // ===== HEIGHT =====
+        JTextField height = createField("Height (cm)", card);
+
+        // ===== WEIGHT =====
+        JTextField weight = createField("Weight (kg)", card);
 
         JButton registerBtn = new JButton("Register");
         stylePrimary(registerBtn);
 
         registerBtn.addActionListener(e -> {
-            UserAuthenticator auth = new UserAuthenticator();
-            auth.registerUser(
-                    username.getText(),
-                    email.getText(),
-                    new String(password.getPassword())
-            );
+            try {
+                UserAuthenticator auth = new UserAuthenticator();
+                auth.registerUser(
+                        username.getText(),
+                        email.getText(),
+                        new String(password.getPassword()),
+                        gender.getText(),
+                        dob.getText(),
+                        Double.parseDouble(height.getText()),
+                        Double.parseDouble(weight.getText())
+                );
 
-            JOptionPane.showMessageDialog(this, "Registration successful!");
-            new LoginFrame();
-            dispose();
+                JOptionPane.showMessageDialog(this,
+                        "Registration successful!",
+                        "Success",
+                        JOptionPane.INFORMATION_MESSAGE);
+
+                new LoginFrame();
+                dispose();
+
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(this,
+                        "Height and Weight must be numbers",
+                        "Input Error",
+                        JOptionPane.ERROR_MESSAGE);
+            }
         });
 
-        card.add(title);
-        card.add(Box.createVerticalStrut(25));
-
-        card.add(userLabel);
-        card.add(Box.createVerticalStrut(5));
-        card.add(username);
-
-        card.add(Box.createVerticalStrut(15));
-
-        card.add(emailLabel);
-        card.add(Box.createVerticalStrut(5));
-        card.add(email);
-
-        card.add(Box.createVerticalStrut(15));
-
-        card.add(passLabel);
-        card.add(Box.createVerticalStrut(5));
-        card.add(password);
-
-        card.add(Box.createVerticalStrut(25));
+        card.add(Box.createVerticalStrut(20));
         card.add(registerBtn);
 
         root.add(card);
         add(root);
         setVisible(true);
+    }
+
+    /* ================== HELPER METHODS ================== */
+
+    private JTextField createField(String labelText, JPanel card) {
+        JTextField field = new JTextField();
+        addLabeledField(labelText, field, card);
+        return field;
+    }
+
+    private void addLabeledField(String labelText, JComponent field, JPanel card) {
+        JLabel label = new JLabel(labelText);
+        label.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        field.setMaximumSize(new Dimension(260, 35));
+        field.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        card.add(Box.createVerticalStrut(10));
+        card.add(label);
+        card.add(Box.createVerticalStrut(5));
+        card.add(field);
     }
 
     private void stylePrimary(JButton btn) {

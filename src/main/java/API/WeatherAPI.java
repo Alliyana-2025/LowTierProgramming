@@ -11,6 +11,8 @@ import java.nio.charset.StandardCharsets;
 
 import com.google.gson.Gson;
 
+import logic.loginDatabase.UserSession;
+
 public class WeatherAPI {
         /**
      * Sends a GET request to the specified API URL.
@@ -97,7 +99,7 @@ public class WeatherAPI {
         try {
             String encodedLocation = URLEncoder.encode(userLocation, StandardCharsets.UTF_8);
 
-            String url = "https://api.openweathermap.org/geo/1.0/direct?q="+encodedLocation+"&limit=5&appid="+API_KEY;
+            String url = "https://api.openweathermap.org/geo/1.0/direct?q="+encodedLocation+"&limit=10&appid="+API_KEY;
             String json = get(url);
 
             GeoLocation[] results = GSON.fromJson(json, GeoLocation[].class);
@@ -123,7 +125,7 @@ public class WeatherAPI {
         }
     }
 
-    public void run(Scanner sc) {
+    public GeoLocation userLocationRegistration(Scanner sc) {
         if (userLocation.isEmpty()) {
             System.out.println("Where do you live? Enter a location:");
             userLocation = sc.nextLine();
@@ -133,7 +135,7 @@ public class WeatherAPI {
 
         if (locations.isEmpty()) {
             System.out.println("No locations found!");
-            return;
+            return null;
         }
 
         if (choice == 0) {
@@ -141,11 +143,41 @@ public class WeatherAPI {
                 System.out.println((i+1) + ". " + locations.get(i));
             }
 
-            System.out.print("\nEnter choice: ");
-            choice = Integer.parseInt(sc.nextLine());
+            while (true) {
+                System.out.print("\nEnter choice: ");
+                choice = Integer.parseInt(sc.nextLine());
+                if (choice > locations.size()) {
+                    System.out.print("Invalid input. Try again");
+                    continue;
+                } else break;
+            }
         }
         GeoLocation selected = locations.get(choice-1);
-        WeatherResponse response = getWeather(selected.lat, selected.lon);
+        return selected;
+    }
+
+    //caching data to avoid unnecessary calls
+    private WeatherResponse cachedWeather = null;
+    private long lastFetchTime = 0;
+    private static final long CACHE_DURATION = 10*60*1000; //10 minutes cached
+
+    public WeatherResponse getWeatherCached(double lat, double lon) {
+        long now = System.currentTimeMillis();
+        
+        if (cachedWeather == null || now - lastFetchTime > CACHE_DURATION) {
+            try {
+                cachedWeather = getWeather(lat, lon);
+                lastFetchTime = now;
+            } catch (Exception e) {
+                System.err.println("Failed to fetch new weather data, using cached value if available");
+                if (cachedWeather == null) throw e;
+            }
+        }
+        return cachedWeather;
+    }    
+
+    public void displayWeather(UserSession session) {
+        WeatherResponse response = getWeatherCached(session.lat, session.lon);
 
         System.out.println("Location: "+response.name+", "+response.sys.country);
         System.out.println("Temperature: "+response.main.temp+"C");

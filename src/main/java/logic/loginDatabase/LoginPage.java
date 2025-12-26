@@ -2,9 +2,12 @@ package logic.loginDatabase;
 
 import java.util.*;
 
+import API.WeatherAPI;
+import API.WeatherAPI.GeoLocation;
+
 public class LoginPage {
     
-    public String run(Scanner sc) {
+    public UserSession run(Scanner sc) {
         UserAuthenticator auth = new UserAuthenticator();
         
         System.out.println("=== User Authentication System ===");
@@ -28,16 +31,17 @@ public class LoginPage {
                     String loginPassword = sc.nextLine();
                     
                     if (auth.authenticate(loginId, loginPassword)) {
-                        
-                        String username = auth.getUsername(loginId); //get username from database
+                        String username = auth.getUsername(loginId);
+                        double lat = auth.getLatitude(loginId);
+                        double lon = auth.getLongitude(loginId);
                         System.out.println("Login successful!");
-                        System.out.println("Welcome, " + username+ "! You can now access the main application.");
+                        System.out.println("Welcome, " + username + "! You can now access the main application.");
                         loggedIn = true;
-                        return loginId;
+
+                        return new UserSession(username, lat, lon);
                     } else {
                         System.out.println("Login failed! Invalid credentials.");
                     }
-
                     break;
                     
                 case 2: // Register
@@ -48,14 +52,31 @@ public class LoginPage {
                     System.out.print("Enter password: ");
                     String password = sc.nextLine();
                     
-                    //password confrimation
+                    // Password confirmation
                     System.out.print("Confirm password: ");
                     String confirmPassword = sc.nextLine();
                     if (!password.equals(confirmPassword)) {
-                    System.out.println("Passwords do not match! Please try again.");
-                    break;  
+                        System.out.println("Passwords do not match! Please try again.");
+                        break;  
                     }
-                    auth.registerUser(username, email, password);
+                    
+                    // Additional user details
+                    API.WeatherAPI api = new WeatherAPI();
+                    GeoLocation loc = api.userLocationRegistration(sc);
+
+                    double latitude = loc.lat;
+                    double longitude = loc.lon;
+
+                    
+                    System.out.print("Enter gender (Male/Female): ");
+                    String gender = sc.nextLine();
+                    
+                    System.out.print("Enter date of birth (YYYY-MM-DD): ");
+                    String dateOfBirth = sc.nextLine();
+                
+                    
+                    // Call the updated registerUser method with all details
+                    auth.registerUser(username, email, password, gender, dateOfBirth, latitude, longitude);
                     break;
                     
                 case 3: // Exit
@@ -67,6 +88,7 @@ public class LoginPage {
                 default:
                     System.out.println("Invalid choice. Please try again.");
             }
-        } return null;
+        } 
+        return null;
     }
 }

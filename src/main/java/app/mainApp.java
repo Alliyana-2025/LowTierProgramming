@@ -10,12 +10,12 @@ public class mainApp {
         Scanner sc = new Scanner(System.in);
 
         LoginPage loginPage = new LoginPage();
-        String username = loginPage.run(sc);
+        UserSession session = loginPage.run(sc);
 
-        if (username == null) return;
+        if (session.username == null) return;
 
-        WelcomeLogicMain welcomeLogic = new WelcomeLogicMain(username);
-        welcomeLogic.run(sc);
+        WelcomeLogicMain welcomeLogic = new WelcomeLogicMain();
+        welcomeLogic.run(session, sc);
 
         sc.close();
     }

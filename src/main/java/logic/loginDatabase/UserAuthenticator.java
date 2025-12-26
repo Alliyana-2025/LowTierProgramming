@@ -41,8 +41,8 @@ public class UserAuthenticator {
         
         return false;
     }
-
-    //get username by email or username 
+    
+    // Get username by email or username 
     public String getUsername(String emailOrUsername) {
         String query = "SELECT username FROM users WHERE email = ? OR username = ?";
         
@@ -65,34 +65,91 @@ public class UserAuthenticator {
         
         return null;
     }
+
+    public double getLatitude(String emailOrUsername) {
+        String query = "SELECT latitude FROM users WHERE email = ? OR username = ?";
+
+        try (Connection conn = dbManager.getConnection();
+            PreparedStatement pstmt = conn.prepareStatement(query)) {
+
+            pstmt.setString(1, emailOrUsername);
+            pstmt.setString(2, emailOrUsername);
+            
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getDouble("latitude");
+                }
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Database error retrieving latitude");
+            e.printStackTrace();
+        }
+
+        return 0;
+    }
+
+    public double getLongitude(String emailOrUsername) {
+        String query = "SELECT longitude FROM users WHERE email = ? OR username = ?";
+
+        try (Connection conn = dbManager.getConnection();
+            PreparedStatement pstmt = conn.prepareStatement(query)) {
+
+            pstmt.setString(1, emailOrUsername);
+            pstmt.setString(2, emailOrUsername);
+            
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getDouble("longitude");
+                }
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Database error retrieving longitude");
+            e.printStackTrace();
+        }
+
+        return 0;
+    }
     
-    public void registerUser(String username, String email, String password) {
+    // Updated registerUser method with all parameters
+    public void registerUser(String username, String email, String password, 
+                             String gender, String dateOfBirth, double latitude, double longitude) {
+        
         String hashedPassword = PasswordHasher.hashPassword(password);
-        //1.Validate email format
+        
+        // 1. Validate email format
         if (!isValidEmail(email)) {
             System.out.println("Invalid email format. Please enter a valid email address.");
             return;
         }
         
-        //2. hash password
+        // 2. Hash password
         if (hashedPassword == null) {
             System.out.println("Password hashing failed. Registration aborted.");
             return;
         }
         
-        //3. Check if user already exists
+        // 3. Check if user already exists
         if (isUsernameExists(username)) {
             System.out.println("Username already taken. Please choose a different username.");
             return;
         }
-
-        //4. Check if email already exists
+        
+        // 4. Check if email already exists
         if (isEmailExists(email)) {
             System.out.println("Email already registered. Please use a different email.");
             return;
         }
-        //5. Insert new user into database
-        String query = "INSERT INTO users (username, email, password) VALUES (?, ?, ?)";
+        
+        // 5. Validate date format
+        if (!isValidDate(dateOfBirth)) {
+            System.out.println("Invalid date format. Please use YYYY-MM-DD format.");
+            return;
+        }
+        
+        // 6. Insert new user into database with all details
+        String query = "INSERT INTO users (username, email, password, gender, date_of_birth, latitude, longitude) VALUES (?, ?, ?, ?, ?, ?, ?)";
         
         try (Connection conn = dbManager.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(query)) {
@@ -100,6 +157,17 @@ public class UserAuthenticator {
             pstmt.setString(1, username);
             pstmt.setString(2, email);
             pstmt.setString(3, hashedPassword);
+            pstmt.setString(4, gender);
+            pstmt.setDouble(6, latitude);
+            pstmt.setDouble(7, longitude);
+            
+            // Convert String date to SQL Date
+            if (dateOfBirth != null && !dateOfBirth.trim().isEmpty()) {
+                java.sql.Date sqlDate = java.sql.Date.valueOf(dateOfBirth);
+                pstmt.setDate(5, sqlDate);
+            } else {
+                pstmt.setNull(5, java.sql.Types.DATE);
+            }
             
             int rowsAffected = pstmt.executeUpdate();
             if (rowsAffected > 0) {
@@ -108,6 +176,8 @@ public class UserAuthenticator {
                 System.out.println("Registration failed.");
             }
             
+        } catch (IllegalArgumentException e) {
+            System.out.println("Invalid date format. Please use YYYY-MM-DD.");
         } catch (SQLException e) {
             System.err.println("Database error during registration");
             e.printStackTrace();
@@ -117,32 +187,45 @@ public class UserAuthenticator {
     // Simple email validation
     private boolean isValidEmail(String email) {
         String emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
-         return email != null && email.matches(emailRegex);
+        return email != null && email.matches(emailRegex);
     }
-
-    //check if email exists in database
+    
+    // Validate date format (YYYY-MM-DD)
+    private boolean isValidDate(String dateStr) {
+        if (dateStr == null || dateStr.trim().isEmpty()) {
+            return true; // Allow empty dates
+        }
+        
+        try {
+            java.sql.Date.valueOf(dateStr);
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
+    }
+    
+    // Check if email exists in database
     private boolean isEmailExists(String email) {
         String query = "SELECT COUNT(*) FROM users WHERE email = ?";
-    
+        
         try (Connection conn = dbManager.getConnection();
             PreparedStatement pstmt = conn.prepareStatement(query)) {
-        
+            
             pstmt.setString(1, email);
-        
+            
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
                     return rs.getInt(1) > 0;
-                }   
+                }
             }
-        
+            
         } catch (SQLException e) {
-        System.err.println("Database error checking email existence");
-        e.printStackTrace();
+            System.err.println("Database error checking email existence");
+            e.printStackTrace();
         }
-    
+        
         return false;
     }
-
     
     // Check if username exists in database
     private boolean isUsernameExists(String username) {
@@ -166,6 +249,7 @@ public class UserAuthenticator {
         
         return false;
     }
+    
     public void close() {
         dbManager.closeConnection();
     }
