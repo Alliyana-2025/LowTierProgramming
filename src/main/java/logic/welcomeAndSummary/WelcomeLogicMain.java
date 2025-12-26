@@ -39,7 +39,14 @@ public class WelcomeLogicMain {
         while (running) {
             System.out.print("Enter choice: ");
             String input = sc.nextLine();
-            int option = Integer.parseInt(input);
+            int option;
+            try {
+                option = Integer.parseInt(input);
+            } catch (NumberFormatException e) {
+                System.out.println("Please enter a valid number.");
+                continue;
+            } 
+            
             switch (option) {
                 case 1: {
                     running = false;

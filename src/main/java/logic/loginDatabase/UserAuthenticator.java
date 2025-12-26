@@ -42,74 +42,30 @@ public class UserAuthenticator {
         return false;
     }
     
-    // Get username by email or username 
-    public String getUsername(String emailOrUsername) {
-        String query = "SELECT username FROM users WHERE email = ? OR username = ?";
-        
+    public UserSession getUserData(String emailOrUsername) {
+        String query = "SELECT username, gender, date_of_birth, latitude, longitude FROM users WHERE email = ? OR username = ?";
+
         try (Connection conn = dbManager.getConnection();
             PreparedStatement pstmt = conn.prepareStatement(query)) {
-            
+                
             pstmt.setString(1, emailOrUsername);
             pstmt.setString(2, emailOrUsername);
-            
+
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
-                    return rs.getString("username");
+                    return new UserSession(
+                        rs.getString("username"),
+                        rs.getString("gender"),
+                        rs.getString("date_of_birth"),
+                        rs.getDouble("latitude"),
+                        rs.getDouble("longitude")
+                    );
                 }
             }
-            
         } catch (SQLException e) {
-            System.err.println("Database error retrieving username");
             e.printStackTrace();
         }
-        
         return null;
-    }
-
-    public double getLatitude(String emailOrUsername) {
-        String query = "SELECT latitude FROM users WHERE email = ? OR username = ?";
-
-        try (Connection conn = dbManager.getConnection();
-            PreparedStatement pstmt = conn.prepareStatement(query)) {
-
-            pstmt.setString(1, emailOrUsername);
-            pstmt.setString(2, emailOrUsername);
-            
-            try (ResultSet rs = pstmt.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getDouble("latitude");
-                }
-            }
-
-        } catch (SQLException e) {
-            System.err.println("Database error retrieving latitude");
-            e.printStackTrace();
-        }
-
-        return 0;
-    }
-
-    public double getLongitude(String emailOrUsername) {
-        String query = "SELECT longitude FROM users WHERE email = ? OR username = ?";
-
-        try (Connection conn = dbManager.getConnection();
-            PreparedStatement pstmt = conn.prepareStatement(query)) {
-
-            pstmt.setString(1, emailOrUsername);
-            pstmt.setString(2, emailOrUsername);
-            
-            try (ResultSet rs = pstmt.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getDouble("longitude");
-                }
-            }
-
-        } catch (SQLException e) {
-            System.err.println("Database error retrieving longitude");
-            e.printStackTrace();
-        }
-
-        return 0;
     }
     
     // Updated registerUser method with all parameters

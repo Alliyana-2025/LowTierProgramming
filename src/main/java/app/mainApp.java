@@ -12,7 +12,11 @@ public class mainApp {
         LoginPage loginPage = new LoginPage();
         UserSession session = loginPage.run(sc);
 
-        if (session.username == null) return;
+        if (session.username == null) {
+            System.out.println("No user session. Exiting app.");
+            sc.close();
+            return;
+        }
 
         WelcomeLogicMain welcomeLogic = new WelcomeLogicMain();
         welcomeLogic.run(session, sc);

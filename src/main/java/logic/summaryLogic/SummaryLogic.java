@@ -19,7 +19,14 @@ public class SummaryLogic {
             combinedEntries.append(entry).append("\n---\n");
         }
 
-        String prompt = "Write a short summary of the user's mood for the week using these entries. Suggest improvements that the user can implement to improve their mood and coming weeks. Write in less than 100 words. \n" + combinedEntries;
+
+        String prompt = "Write a short summary of the user's mood for the week using these entries, "
+                        + "take into account the user's data, such as AGE (given the DoB) and where user lives (given Latitude and Longitude) that is also given if it helps with better response. "
+                        + "Do not include the user's data EXCEPT the name, inside the response text "
+                        + "Suggest improvements that the user can implement to improve their mood and coming weeks based on their data/profile. "
+                        + "Write in less than 100 words. \n"
+                        + combinedEntries + "\n"
+                        + session;
 
         geminiAPI api = new geminiAPI();
         String response = api.geminiResponse(prompt, combinedEntries.toString());
