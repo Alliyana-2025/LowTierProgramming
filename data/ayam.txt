@@ -1,0 +1,6 @@
+DATE: 2025-12-29
+Journal:
+sfsfs
+Sentiment:
+Gemini Response: Please provide the journal entry you'd like me to analyze! Once you paste it here, I'll be able to assess its sentiment and give you a short insight.
+---------------------

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Welcome</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <div class="page">
+    <div class="card wide">
+
+      <div class="icon">📖</div>
+
+      <!-- NAMA USER DINAMIS -->
+      <h1 id="welcomeText">Welcome 👋</h1>
+
+      <p class="subtitle">
+        Your safe space to write, reflect, and grow ✨
+      </p>
+
+      <div class="result">
+        <p><strong>What would you like to do today?</strong></p>
+      </div>
+
+      <button class="primary-btn" type="button" onclick="goJournal()">
+        Start Writing Journal
+      </button>
+
+      <button class="secondary-btn" type="button" onclick="goSummary()">
+        View Weekly Summary
+      </button>
+
+      <a class="link" href="index.html">Logout</a>
+
+      <div class="footer">
+        Every day is a new page in your story 🌱
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===== SCRIPT ===== -->
+  <script>
+    // Ambil username dari backend
+    fetch("http://localhost:8080/user")
+      .then(res => res.text())
+      .then(username => {
+        if (!username) {
+          // Belum login → balik ke login
+          window.location.href = "index.html";
+        } else {
+          document.getElementById("welcomeText").innerText =
+            "Welcome, " + username + " 👋";
+        }
+      });
+
+    function goJournal() {
+      window.location.href = "journal.html";
+    }
+
+    function goSummary() {
+      window.location.href = "summary.html";
+    }
+  </script>
+
+</body>
+</html>

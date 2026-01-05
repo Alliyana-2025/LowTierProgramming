@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Weekly Summary</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <div class="page">
+    <div class="card wide">
+
+      <div class="icon">📊</div>
+
+      <h1>Weekly Summary</h1>
+      <p class="subtitle">
+        A quick look at your emotional journey this week ✨
+      </p>
+
+      <!-- 🌙 DARK MODE -->
+      <button class="secondary-btn" type="button" onclick="toggleDark()">
+        Toggle Dark Mode 🌙
+      </button>
+
+      <!-- SUMMARY RESULT -->
+      <div id="summaryBox" class="result">
+        <p><strong>Loading summary...</strong></p>
+      </div>
+
+      <!-- ACTIONS -->
+      <button class="primary-btn" type="button" onclick="goJournal()">
+        Write Another Journal
+      </button>
+
+      <button class="secondary-btn" type="button" onclick="goHome()">
+        Back to Home
+      </button>
+
+      <div class="footer">
+        Generated based on your journal activity 📘
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    function goJournal() {
+      window.location.href = "journal.html";
+    }
+
+    function goHome() {
+      window.location.href = "welcome.html";
+    }
+
+    function toggleDark() {
+      document.body.classList.toggle("dark");
+    }
+
+    // === LOAD SUMMARY FROM BACKEND ===
+    fetch("http://localhost:8080/summary")
+      .then(res => res.text())
+      .then(data => {
+        document.getElementById("summaryBox").innerHTML =
+          "<p><strong>Insight</strong></p><p>" + data + "</p>";
+      })
+      .catch(() => {
+        document.getElementById("summaryBox").innerHTML =
+          "<p>Failed to load summary.</p>";
+      });
+  </script>
+
+</body>
+</html>
