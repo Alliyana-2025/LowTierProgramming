@@ -1,73 +1,60 @@
 package logic.welcomeAndSummary;
 
-import logic.Journal.*;
-import logic.summaryLogic.SummaryLogic;
-
-import java.time.LocalTime;
-import java.time.ZoneId;
-import java.util.Scanner;
-import API.WeatherAPI;
-import logic.loginDatabase.*;
+import java.io.*;
+import java.util.*;
+import API.geminiAPI;
+import logic.loginDatabase.UserSession;
 
 public class WelcomeLogicMain {
 
     public void run(UserSession session, Scanner sc) {
+        String summary = generate(session);
+        System.out.println("\n=== Weekly Summary ===");
+        System.out.println(summary);
+    }
 
-        LocalTime timeNow = LocalTime.now(ZoneId.of("GMT+8"));
+    // === METHOD YANG DIPAKAI BACKEND & CONSOLE ===
+    public static String generate(UserSession session) {
+        List<String> entries = readLastSevenEntries("data" + File.separator + "journals.txt");
 
-        String greeting;
-
-        if (timeNow.isBefore(LocalTime.NOON)) {
-            greeting = "Good Morning";
-        } else if (timeNow.isBefore(LocalTime.of(17, 0))) {
-            greeting = "Good Afternoon";
-        } else {
-            greeting = "Good Evening";
+        if (entries.isEmpty()) {
+            return "No journal entries found.";
         }
 
-        System.out.println("\n" + greeting + "\n");
+        StringBuilder combined = new StringBuilder();
+        for (String e : entries) {
+            combined.append(e).append("\n---\n");
+        }
 
-        WeatherAPI api = new WeatherAPI();
-        api.displayWeather(session);
+        String prompt =
+                "Write a short weekly emotional summary for user named "
+                + session.username + ". "
+                + "Suggest improvements. Max 100 words.\n\n"
+                + combined;
 
-        JournalPage journalPage = new JournalPage();
-        SummaryLogic summaryPage = new SummaryLogic();
+        geminiAPI api = new geminiAPI();
+        return api.geminiResponse(prompt, combined.toString());
+    }
 
-        System.out.println("Choose an option:\n1. Journal Page\n2. Weekly Summary\n3. Exit App");
-        boolean running = true;
-
-        while (running) {
-            System.out.print("Enter choice: ");
-            String input = sc.nextLine();
-            int option;
-            try {
-                option = Integer.parseInt(input);
-            } catch (NumberFormatException e) {
-                System.out.println("Please enter a valid number.");
-                continue;
-            } 
-            
-            switch (option) {
-                case 1: {
-                    running = false;
-                    journalPage.run(session, sc);
-                    break;
+    private static List<String> readLastSevenEntries(String filePath) {
+        List<String> entries = new ArrayList<>();
+        try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
+            String line;
+            StringBuilder entry = new StringBuilder();
+            while ((line = br.readLine()) != null) {
+                if (line.startsWith("DATE:")) {
+                    if (entry.length() > 0) {
+                        entries.add(entry.toString());
+                        entry.setLength(0);
+                    }
                 }
-                case 2: {
-                    running = false;
-                    summaryPage.run(session, sc);
-                    break;
-                    
-                }
-                case 3: {
-                    System.out.println("See you again next time!");
-                    System.exit(0);
-                }
-                default: {
-                    System.out.println("Invalid input");
-                    break;
-                }
+                entry.append(line).append("\n");
             }
+            if (entry.length() > 0) entries.add(entry.toString());
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+
+        return entries.subList(Math.max(0, entries.size() - 7), entries.size());
     }
 }

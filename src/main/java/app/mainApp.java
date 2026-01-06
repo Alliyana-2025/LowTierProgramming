@@ -1,24 +1,23 @@
 package app;
-import java.util.*;
-import logic.loginDatabase.*;
-import logic.welcomeAndSummary.*;
 
-public class mainApp {
+import javafx.application.Application;
+import javafx.stage.Stage;
+import UI.SceneNavigator;
+
+public class mainApp extends Application {
+
+    @Override
+    public void start(Stage stage) {
+        SceneNavigator.setStage(stage);
+
+        stage.setTitle("Mindful Journal");
+
+        SceneNavigator.goToLogin();
+
+        stage.show();
+    }
+
     public static void main(String[] args) {
-        Scanner sc = new Scanner(System.in);
-
-        LoginPage loginPage = new LoginPage();
-        UserSession session = loginPage.run(sc);
-
-        if (session.username == null) {
-            System.out.println("No user session. Exiting app.");
-            sc.close();
-            return;
-        }
-
-        WelcomeLogicMain welcomeLogic = new WelcomeLogicMain();
-        welcomeLogic.run(session, sc);
-
-        sc.close();
+        launch(args);
     }
 }

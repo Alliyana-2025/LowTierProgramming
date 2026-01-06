@@ -1,0 +1,15 @@
+.root {
+    -fx-font-family: "System";
+}
+
+.button:hover {
+    -fx-scale-x: 1.02;
+    -fx-scale-y: 1.02;
+}
+
+.text-field:focused, .password-field:focused {
+    -fx-background-color: #f9fafb;
+    -fx-border-color: #c084fc;
+    -fx-border-width: 2;
+    -fx-border-radius: 12;
+}
