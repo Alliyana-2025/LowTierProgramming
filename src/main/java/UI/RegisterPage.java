@@ -1,11 +1,14 @@
 package UI;
 
+import java.util.List;
+
 import API.WeatherAPI;
 import API.WeatherAPI.GeoLocation;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.effect.GaussianBlur;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -27,6 +30,7 @@ public class RegisterPage {
     private PasswordField passwordField;
     private PasswordField confirmPasswordField;
     private TextField locationField;
+    private ComboBox<GeoLocation> locationBox;
     private ComboBox<String> genderBox;
     private DatePicker dobPicker;
 
@@ -167,7 +171,26 @@ public class RegisterPage {
         );
         passwordField = createPassword("Password");
         confirmPasswordField = createPassword("Confirm Password");
+
+        /* ===== LOCATION SEARCH ==== */
         locationField = createInput("Where do you live?", "e.g. Kuala Lumpur");
+        ImageView searchIcon = new ImageView(new Image(
+            getClass().getResourceAsStream("/images/search.png")
+        ));
+        searchIcon.setFitWidth(20);
+        searchIcon.setFitHeight(20);
+        searchIcon.setPreserveRatio(true);
+        searchIcon.setStyle("-fx-cursor: hand;");
+
+        StackPane.setAlignment(searchIcon, Pos.CENTER_RIGHT);
+        StackPane.setMargin(searchIcon, new Insets(0, 14, 0, 0));
+
+        StackPane locationContainer = new StackPane(
+            locationField,
+            searchIcon
+        );
+
+        searchIcon.setOnMouseClicked(e -> searchAPI());
 
         Button submitBtn = new Button("Create Account");
         submitBtn.setPrefWidth(Double.MAX_VALUE);
@@ -194,7 +217,7 @@ public class RegisterPage {
             dobPicker,
             passwordField,
             confirmPasswordField,
-            locationField,
+            locationContainer,
             submitBtn,
             backBtn
         );
@@ -259,7 +282,7 @@ public class RegisterPage {
         }
 
         // Location search service
-        GeoLocation loc = api.userLocationRegistration();
+        GeoLocation loc = locationBox.getValue();
         double lat = loc.lat;
         double lon = loc.lon;
 
@@ -277,6 +300,49 @@ public class RegisterPage {
         ).show();
 
         navigator.goToLogin();
+    }
+
+    private void searchAPI() {
+        WeatherAPI api = new WeatherAPI();
+        String location = locationField.getText();
+        List<GeoLocation> locations = api.searchLocations(location);
+
+        if (locations.isEmpty()) {
+            new Alert(AlertType.WARNING, "No locations found!").show();
+            return;
+        }
+
+        locationField.setVisible(false);
+        locationField.setManaged(false);
+
+        locationBox = new ComboBox<>();
+        locationBox.getItems().addAll(locations);
+
+        locationBox.setCellFactory(cb -> new ListCell<>() {
+            @Override
+            protected void updateItem(GeoLocation item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty || item == null ? null : item.toString());
+            }
+        });
+        locationBox.setButtonCell(new ListCell<>() {
+            @Override
+            protected void updateItem(GeoLocation item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty || item == null ? null : item.toString());
+            }
+        });
+
+        locationBox.setPrefWidth(Double.MAX_VALUE);
+        locationBox.setStyle(
+            "-fx-background-color: #F9FAFB;" +
+            "-fx-background-radius: 12;" +
+            "-fx-padding: 12;"
+        );
+
+        StackPane locationContainer = (StackPane) locationField.getParent();
+        locationContainer.getChildren().remove(locationField);
+        locationContainer.getChildren().add(locationBox);
     }
 
     /* ================= BACKGROUND BLUR ================= */
