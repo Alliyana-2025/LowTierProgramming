@@ -1,6 +1,6 @@
 package logic.Journal;
 
-import API.geminiAPI;
+import API.GeminiAPI;
 import java.io.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -11,10 +11,10 @@ public class JournalManager {
     /* ================= SAVE JOURNAL ================= */
     public static void saveJournal(String username, String title, String journalText) {
         try {
-            geminiAPI api = new geminiAPI();
+            GeminiAPI api = new GeminiAPI();
 
             String prompt = "Analyze the sentiment of this journal entry and return a short insight.";
-            String sentiment = api.geminiResponse(prompt, journalText);
+            String sentiment = api.geminiResponse(prompt);
 
             File dir = new File("data");
             if (!dir.exists()) dir.mkdirs();

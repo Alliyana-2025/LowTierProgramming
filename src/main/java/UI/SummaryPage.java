@@ -1,5 +1,13 @@
 package UI;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import API.GeminiAPI;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -81,6 +89,7 @@ public class SummaryPage {
         headerCard.setEffect(new DropShadow(15, Color.rgb(0,0,0,0.25)));
 
         /* ================= CHART ================= */
+
         CategoryAxis xAxis = new CategoryAxis();
         NumberAxis yAxis = new NumberAxis(1, 5, 1);
 
@@ -99,7 +108,7 @@ public class SummaryPage {
         moodChart.getData().add(series);
 
         ImageView summaryIcon = new ImageView(
-            new Image(getClass().getResourceAsStream("/images/summary.png"))
+            new Image(getClass().getResource("/images/summary.png").toExternalForm())
         );
         summaryIcon.setFitWidth(18);
         summaryIcon.setFitHeight(18);
@@ -132,10 +141,31 @@ public class SummaryPage {
         HBox insightTitle = new HBox(8, insightStar, insightTitleText);
         insightTitle.setAlignment(Pos.CENTER_LEFT);
 
-        Label insightText = new Label(
-            "Your mood tends to improve towards the end of the week.\n" +
-            "Keep journaling to maintain emotional awareness."
-        );
+        // pulling 7 days worth of journal entries
+        List<String> lastSevenEntries = readLastSevenEntries("data"+File.separator+"journals.txt");
+        if (lastSevenEntries.isEmpty()) {
+            System.out.println("No journal entries found.");
+        }
+
+        StringBuilder combinedEntries = new StringBuilder();
+        for (String entry : lastSevenEntries) {
+            combinedEntries.append(entry).append("\n---\n");
+        }
+        
+        // calling gemini AI for summary
+
+        GeminiAPI api = new GeminiAPI();
+
+        String prompt = "Write a short summary of the user's mood for the week using these entries, "
+                        + "take into account the user's data, such as AGE (given the DoB) and where user lives (given Latitude and Longitude) that is also given if it helps with better response. "
+                        + "Do not include the user's data EXCEPT the name, inside the response text "
+                        + "Suggest improvements that the user can implement to improve their mood and coming weeks based on their data/profile. "
+                        + "Write in less than 100 words. \n"
+                        + combinedEntries + "\n"
+                        + navigator.getSession();
+        String weeklyInsight = api.getSummaryForSession(prompt, navigator.getSession());
+
+        Label insightText = new Label(weeklyInsight);
         insightText.setWrapText(true);
         insightText.setTextFill(Color.GRAY);
 
@@ -156,6 +186,30 @@ public class SummaryPage {
         );
 
         scene = new Scene(root, stage.getWidth(), stage.getHeight());
+    }
+
+    //helper func to read and combine entries
+    private static List<String> readLastSevenEntries(String filePath) {
+        List<String> entries = new ArrayList<>();
+        try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
+            String line;
+            StringBuilder currentEntry = new StringBuilder();
+            while ((line = br.readLine()) != null) {
+                if (line.startsWith("DATE: ")) {
+                    if (currentEntry.length() > 0) {
+                        entries.add(currentEntry.toString().trim());
+                        currentEntry.setLength(0);
+                    }
+                }
+                currentEntry.append(line).append("\n");
+            }
+            if (currentEntry.length() > 0) entries.add(currentEntry.toString().trim());
+        } catch (IOException e) {
+            System.err.println("Error reading journal file: " + e.getMessage());
+        }
+
+        int size = entries.size();
+        return entries.subList(Math.max(0, size - 7), size);
     }
 
     public Scene getScene() {

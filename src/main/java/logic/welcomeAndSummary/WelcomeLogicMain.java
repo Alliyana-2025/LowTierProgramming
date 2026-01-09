@@ -2,7 +2,7 @@ package logic.welcomeAndSummary;
 
 import java.io.*;
 import java.util.*;
-import API.geminiAPI;
+import API.GeminiAPI;
 import logic.loginDatabase.UserSession;
 
 public class WelcomeLogicMain {
@@ -32,8 +32,8 @@ public class WelcomeLogicMain {
                 + "Suggest improvements. Max 100 words.\n\n"
                 + combined;
 
-        geminiAPI api = new geminiAPI();
-        return api.geminiResponse(prompt, combined.toString());
+        GeminiAPI api = new GeminiAPI();
+        return api.geminiResponse(prompt);
     }
 
     private static List<String> readLastSevenEntries(String filePath) {

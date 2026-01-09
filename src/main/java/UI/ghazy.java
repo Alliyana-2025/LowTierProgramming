@@ -4,7 +4,7 @@ import API.*;
 
 public class ghazy {
 
-    geminiAPI api = new geminiAPI();
+    GeminiAPI api = new GeminiAPI();
 
          public String analyze(String journal) {
 
@@ -23,7 +23,7 @@ public class ghazy {
         // Call Gemini API
         // =========================
         String prompt = "Reply with the lyrics of Eminem Lose Yourself";
-        String response = api.geminiResponse(prompt, journal);
+        String response = api.geminiResponse(prompt);
 
         if (response == null) {
             return "Error bang";

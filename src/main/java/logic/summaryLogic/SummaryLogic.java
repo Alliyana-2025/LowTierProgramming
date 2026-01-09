@@ -2,7 +2,7 @@ package logic.summaryLogic;
 
 import java.io.*;
 import java.util.*;
-import API.geminiAPI;
+import API.GeminiAPI;
 import logic.welcomeAndSummary.WelcomeLogicMain;
 import logic.loginDatabase.UserSession;
 
@@ -28,8 +28,8 @@ public class SummaryLogic {
                         + combinedEntries + "\n"
                         + session;
 
-        geminiAPI api = new geminiAPI();
-        String response = api.geminiResponse(prompt, combinedEntries.toString());
+        GeminiAPI api = new GeminiAPI();
+        String response = api.geminiResponse(prompt);
 
         System.out.println("=== Weekly Summary Page ===");
         System.out.println(response);

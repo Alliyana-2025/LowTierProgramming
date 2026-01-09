@@ -1,5 +1,6 @@
 package UI;
 
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -14,9 +15,12 @@ import javafx.scene.Cursor;
 import javafx.stage.Stage;
 
 import logic.Journal.JournalManager;
+import logic.Journal.JournalPage;
 import logic.loginDatabase.UserSession;
 
 import java.time.LocalDate;
+
+import com.mysql.cj.conf.BooleanProperty;
 
 public class JournalCreatePage {
 
@@ -163,6 +167,26 @@ public class JournalCreatePage {
             "-fx-padding: 10 22;"
         );
 
+        HBox summaryRow = new HBox(10);
+        titleRowForm.setAlignment(Pos.CENTER_LEFT);
+
+        ImageView starIcon = new ImageView(
+            new Image(getClass().getResourceAsStream("/images/star.png"))
+        );
+        starIcon.setFitWidth(20);
+        starIcon.setFitHeight(20);
+
+        Label summaryLabel = new Label("AI Summary");
+        summaryLabel.setFont(Font.font("Segoe UI", 18));
+        summaryLabel.setTextFill(Color.web("#581C87"));
+
+        summaryRow.getChildren().addAll(starIcon, summaryLabel);
+
+        Label responseLabel = new Label("");
+        responseLabel.setFont(Font.font("Segoe UI", 14));
+        responseLabel.setTextFill(Color.BLACK);
+
+        javafx.beans.property.BooleanProperty saved = new SimpleBooleanProperty(false);
         saveBtn.setOnAction(e -> {
             if (titleField.getText().isEmpty() || journalArea.getText().isEmpty()) {
                 new Alert(Alert.AlertType.WARNING,
@@ -170,23 +194,15 @@ public class JournalCreatePage {
                 ).show();
                 return;
             }
-
-            JournalManager.saveJournal(
-                navigator.getSession().username,
-                titleField.getText(),
-                journalArea.getText()
-            );
-
-            new Alert(Alert.AlertType.INFORMATION,
-                "Journal saved successfully.\nSentiment analyzed by Gemini ✨"
-            ).show();
-
-            navigator.goToJournalDates();
+            String response = JournalPage.saveJournals(titleField.getText(),journalArea.getText(), navigator.getSession());
+            responseLabel.setText(response);
+            saved.set(true);    
         });
 
         saveBtn.disableProperty().bind(
             titleField.textProperty().isEmpty()
                 .or(journalArea.textProperty().isEmpty())
+                .or(saved)
         );
 
         /* ===== ASSEMBLE ===== */
@@ -195,6 +211,8 @@ public class JournalCreatePage {
             dateLabel,
             titleField,
             journalArea,
+            summaryRow,
+            responseLabel,
             saveBtn
         );
 

@@ -6,7 +6,7 @@ import java.util.*;
 import java.io.*;
 import logic.welcomeAndSummary.*;
 import logic.loginDatabase.*;
-import API.geminiAPI;
+import API.GeminiAPI;
 
 public class JournalPage {
     private static final String JOURNAL_FILE = "data" + File.separator + "journals.txt";
@@ -26,7 +26,7 @@ public class JournalPage {
 
     public void run(UserSession session, Scanner scanner) {
         loadJournals(scanner);
-        showJournalsPage(session, scanner);
+        //showJournalsPage(session, scanner);
     }
 
     private static void loadJournals(Scanner scanner) {
@@ -95,197 +95,202 @@ public class JournalPage {
         }
     }
 
-    private static void saveJournals() {
+    public static String saveJournals(String title, String journalText, UserSession session) {
         File file = new File(JOURNAL_FILE);
         file.getParentFile().mkdirs();
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(JOURNAL_FILE))) {
-            for (Map.Entry<LocalDate, JournalEntry> entry : journals.entrySet()) {
-                writer.write("DATE:" + entry.getKey().format(DATE_FORMATTER));
-                writer.newLine();
-                writer.write(entry.getValue().content);
-                writer.newLine();
-                
-                // Write AI summary if it exists
-                if (entry.getValue().aiSummary != null && !entry.getValue().aiSummary.isEmpty()) {
-                    writer.write("AI_SUMMARY:");
-                    writer.newLine();
-                    writer.write(entry.getValue().aiSummary);
-                    writer.newLine();
-                }
-                
-                writer.write("---");
-                writer.newLine();
-            }
-        } catch (IOException e) {
-            System.out.println("Error saving journals: " + e.getMessage());
-        }
+        try {
+            GeminiAPI api = new GeminiAPI();
+
+            String prompt = "Analyze the given entry and give a short insight on how the writer feels, and how their day can be improved. "
+                        + "Take into account the user's data, such as AGE (given the DoB) and where user lives (given Latitude and Longitude), and also the weather that are also given if it helps with better response. "
+                        + "Do not include the user's data EXCEPT the name, inside the response text "
+                        + "Write in less than 50 words. \n"
+                        + journalText + "\n"
+                        + session;
+            String sentiment = api.geminiResponse(prompt);
+
+            File dir = new File("data");
+            if (!dir.exists()) dir.mkdirs();
+
+            FileWriter fw = new FileWriter(JOURNAL_FILE, true);
+            fw.write("TITLE: " + title + "\n");
+            fw.write("DATE: " + LocalDate.now() + "\n");
+            fw.write("Journal:\n" + journalText + "\n");
+            fw.write("Sentiment:\n" + sentiment + "\n");
+            fw.write("---------------------\n");
+            fw.close();
+
+            return sentiment;
+        } catch (Exception e) {
+            e.printStackTrace();
+        } return null;
     }
 
-    private static void showJournalsPage(UserSession session, Scanner scanner) {
-        while (true) {
-            System.out.println("\nJournals Page");
-            System.out.println("===");
-            System.out.println("Journal Dates");
-            System.out.println("===");
+    // private static void showJournalsPage(UserSession session, Scanner scanner) {
+    //     while (true) {
+    //         System.out.println("\nJournals Page");
+    //         System.out.println("===");
+    //         System.out.println("Journal Dates");
+    //         System.out.println("===");
 
-            LocalDate today = LocalDate.now();
-            List<LocalDate> dates = new ArrayList<>(journals.keySet());
+    //         LocalDate today = LocalDate.now();
+    //         List<LocalDate> dates = new ArrayList<>(journals.keySet());
             
-            if (!dates.contains(today)) {
-                dates.add(today);
-            }
+    //         if (!dates.contains(today)) {
+    //             dates.add(today);
+    //         }
             
-            Collections.sort(dates);
+    //         Collections.sort(dates);
 
-            for (int i = 0; i < dates.size(); i++) {
-                LocalDate date = dates.get(i);
-                String dateStr = date.format(DATE_FORMATTER);
-                if (date.equals(today)) {
-                    System.out.println((i + 1) + ". " + dateStr + " (Today)");
-                } else {
-                    System.out.println((i + 1) + ". " + dateStr);
-                }
-            }
+    //         for (int i = 0; i < dates.size(); i++) {
+    //             LocalDate date = dates.get(i);
+    //             String dateStr = date.format(DATE_FORMATTER);
+    //             if (date.equals(today)) {
+    //                 System.out.println((i + 1) + ". " + dateStr + " (Today)");
+    //             } else {
+    //                 System.out.println((i + 1) + ". " + dateStr);
+    //             }
+    //         }
 
-            boolean todayHasJournal = journals.containsKey(today);
-            if (todayHasJournal) {
-                System.out.print("\nSelect a date to view journal, edit the journal for today, or enter '-1' to exit the program :\n> ");
-            } else {
-                System.out.print("\nSelect a date to view journal, create a new journal for today, or enter '-1' to exit the program :\n> ");
-            }
+    //         boolean todayHasJournal = journals.containsKey(today);
+    //         if (todayHasJournal) {
+    //             System.out.print("\nSelect a date to view journal, edit the journal for today, or enter '-1' to exit the program :\n> ");
+    //         } else {
+    //             System.out.print("\nSelect a date to view journal, create a new journal for today, or enter '-1' to exit the program :\n> ");
+    //         }
 
-            String input = scanner.nextLine().trim();
+    //         String input = scanner.nextLine().trim();
             
-            if (input.isEmpty()) {
-                continue;
-            }
+    //         if (input.isEmpty()) {
+    //             continue;
+    //         }
 
-            try {
-                int choice = Integer.parseInt(input);
+    //         try {
+    //             int choice = Integer.parseInt(input);
 
-                if (choice == -1){
-                    WelcomeLogicMain welcomePage = new WelcomeLogicMain();
-                    welcomePage.run(session, scanner);
-                }
+    //             if (choice == -1){
+    //                 WelcomeLogicMain welcomePage = new WelcomeLogicMain();
+    //                 welcomePage.run(session, scanner);
+    //             }
 
-                if ((choice != -1 && choice < 1)  || choice > dates.size()) {
-                    System.out.println("Invalid selection. Please try again.");
-                    continue;
-                }
+    //             if ((choice != -1 && choice < 1)  || choice > dates.size()) {
+    //                 System.out.println("Invalid selection. Please try again.");
+    //                 continue;
+    //             }
 
-                LocalDate selectedDate = dates.get(choice - 1);
+    //             LocalDate selectedDate = dates.get(choice - 1);
                 
-                if (selectedDate.equals(today)) {
-                    handleTodayJournal(today, scanner);
-                } else {
-                    viewJournal(selectedDate, scanner);
-                }
-            } catch (NumberFormatException e) {
-                System.out.println("Invalid input. Please enter a number.");
-            }
-        }
-    }
+    //             if (selectedDate.equals(today)) {
+    //                 handleTodayJournal(today, scanner);
+    //             } else {
+    //                 viewJournal(selectedDate, scanner);
+    //             }
+    //         } catch (NumberFormatException e) {
+    //             System.out.println("Invalid input. Please enter a number.");
+    //         }
+    //     }
+    // }
 
-    private static void handleTodayJournal(LocalDate today, Scanner scanner) {
-        if (!journals.containsKey(today)) {
-            createJournal(today, scanner);
-        } else {
-            showTodayOptions(today, scanner);
-        }
-    }
+    // private static void handleTodayJournal(LocalDate today, Scanner scanner) {
+    //     if (!journals.containsKey(today)) {
+    //         createJournal(today, scanner);
+    //     } else {
+    //         showTodayOptions(today, scanner);
+    //     }
+    // }
 
-    private static void createJournal(LocalDate date, Scanner scanner) {
-        System.out.println("\nEnter your journal entry for " + date.format(DATE_FORMATTER) + ":");
-        System.out.print("> ");
-        String entry = scanner.nextLine();
+    // private static void createJournal(LocalDate date, Scanner scanner) {
+    //     System.out.println("\nEnter your journal entry for " + date.format(DATE_FORMATTER) + ":");
+    //     System.out.print("> ");
+    //     String entry = scanner.nextLine();
         
         // Ask if user wants AI summary
-        System.out.print("\nDo you want an AI summary of your current Entry? (yes/no): ");
-        String wantSummary = scanner.nextLine().trim().toLowerCase();
+        // System.out.print("\nDo you want an AI summary of your current Entry? (yes/no): ");
+        // String wantSummary = scanner.nextLine().trim().toLowerCase();
         
-        String aiSummary = "";
-        if (wantSummary.equals("yes") || wantSummary.equals("y")) {
-            aiSummary = generateAISummary(entry);
-            if (aiSummary != null && !aiSummary.isEmpty()) {
-                System.out.println("\n" + aiSummary);
-            }
-        }
+        // String aiSummary = "";
+        // if (wantSummary.equals("yes") || wantSummary.equals("y")) {
+        //     aiSummary = generateAISummary(entry);
+        //     if (aiSummary != null && !aiSummary.isEmpty()) {
+        //         System.out.println("\n" + aiSummary);
+        //     }
+        // }
         
-        journals.put(date, new JournalEntry(entry, aiSummary));
-        saveJournals();
+        // journals.put(date, new JournalEntry(entry, aiSummary));
+        // saveJournals();
         
-        System.out.println("\nJournal saved successfully!");
-        System.out.println("Would you like to:");
-        System.out.println("1. View Journal");
-        System.out.println("2. Edit Journal");
-        System.out.println("3. Back to Dates");
-        System.out.print("> ");
+    //     System.out.println("\nJournal saved successfully!");
+    //     System.out.println("Would you like to:");
+    //     System.out.println("1. View Journal");
+    //     System.out.println("2. Edit Journal");
+    //     System.out.println("3. Back to Dates");
+    //     System.out.print("> ");
         
-        String choice = scanner.nextLine().trim();
+    //     String choice = scanner.nextLine().trim();
         
-        switch (choice) {
-            case "1":
-                viewJournal(date, scanner);
-                break;
-            case "2":
-                editJournal(date, scanner);
-                break;
-            case "3":
-            default:
-                break;
-        }
-    }
+    //     switch (choice) {
+    //         case "1":
+    //             viewJournal(date, scanner);
+    //             break;
+    //         case "2":
+    //             editJournal(date, scanner);
+    //             break;
+    //         case "3":
+    //         default:
+    //             break;
+    //     }
+    // }
 
-    private static void editJournal(LocalDate date, Scanner scanner) {
-        System.out.println("\nEdit your journal entry for " + date.format(DATE_FORMATTER) + ":");
-        System.out.print("> ");
-        String entry = scanner.nextLine();
+    // private static void editJournal(LocalDate date, Scanner scanner) {
+    //     System.out.println("\nEdit your journal entry for " + date.format(DATE_FORMATTER) + ":");
+    //     System.out.print("> ");
+    //     String entry = scanner.nextLine();
         
-        // Ask if user wants AI summary
-        System.out.print("\nDo you want an AI summary of your updated Entry? (yes/no): ");
-        String wantSummary = scanner.nextLine().trim().toLowerCase();
+    //     // Ask if user wants AI summary
+    //     System.out.print("\nDo you want an AI summary of your updated Entry? (yes/no): ");
+    //     String wantSummary = scanner.nextLine().trim().toLowerCase();
         
-        String aiSummary = "";
-        if (wantSummary.equals("yes") || wantSummary.equals("y")) {
-            aiSummary = generateAISummary(entry);
-            if (aiSummary != null && !aiSummary.isEmpty()) {
-                System.out.println("\n" + aiSummary);
-            }
-        } else {
-            // Keep existing AI summary if user doesn't want a new one
-            JournalEntry existingEntry = journals.get(date);
-            if (existingEntry != null) {
-                aiSummary = existingEntry.aiSummary;
-            }
-        }
+    //     String aiSummary = "";
+    //     if (wantSummary.equals("yes") || wantSummary.equals("y")) {
+    //         aiSummary = generateAISummary(entry);
+    //         if (aiSummary != null && !aiSummary.isEmpty()) {
+    //             System.out.println("\n" + aiSummary);
+    //         }
+    //     } else {
+    //         // Keep existing AI summary if user doesn't want a new one
+    //         JournalEntry existingEntry = journals.get(date);
+    //         if (existingEntry != null) {
+    //             aiSummary = existingEntry.aiSummary;
+    //         }
+    //     }
         
-        journals.put(date, new JournalEntry(entry, aiSummary));
-        saveJournals();
+    //     journals.put(date, new JournalEntry(entry, aiSummary));
+    //     saveJournals();
         
-        System.out.println("\nJournal updated successfully!");
-    }
+    //     System.out.println("\nJournal updated successfully!");
+    // }
 
-    private static void showTodayOptions(LocalDate today, Scanner scanner) {
-        System.out.println("\nWould you like to:");
-        System.out.println("1. View Journal");
-        System.out.println("2. Edit Journal");
-        System.out.println("3. Back to Dates");
-        System.out.print("> ");
+    // private static void showTodayOptions(LocalDate today, Scanner scanner) {
+    //     System.out.println("\nWould you like to:");
+    //     System.out.println("1. View Journal");
+    //     System.out.println("2. Edit Journal");
+    //     System.out.println("3. Back to Dates");
+    //     System.out.print("> ");
         
-        String choice = scanner.nextLine().trim();
+    //     String choice = scanner.nextLine().trim();
         
-        switch (choice) {
-            case "1":
-                viewJournal(today, scanner);
-                break;
-            case "2":
-                editJournal(today, scanner);
-                break;
-            case "3":
-            default:
-                break;
-        }
-    }
+    //     switch (choice) {
+    //         case "1":
+    //             viewJournal(today, scanner);
+    //             break;
+    //         case "2":
+    //             editJournal(today, scanner);
+    //             break;
+    //         case "3":
+    //         default:
+    //             break;
+    //     }
+    // }
 
     private static void viewJournal(LocalDate date, Scanner scanner) {
         System.out.println("\n=== Journal Entry for " + date.format(DATE_FORMATTER) + " ===");
@@ -312,9 +317,9 @@ public class JournalPage {
         System.out.println("\nGenerating AI summary...");
         
         try {
-            geminiAPI api = new geminiAPI();
+            GeminiAPI api = new GeminiAPI();
             String prompt = "Please provide a brief summary of the following journal entry in 2-3 sentences:\n\n" + journalContent;
-            String response = api.geminiResponse(prompt, journalContent);
+            String response = api.geminiResponse(prompt);
             
             if (response != null && !response.isEmpty()) {
                 return response;
