@@ -233,7 +233,7 @@ public class JournalView {
                     ).show();
                     return;
                 }
-                String response = JournalPage.saveJournals(titleField.getText(),journalArea.getText(), navigator.getSession());
+                String response = JournalSave.saveJournals(titleField.getText(),journalArea.getText(), navigator.getSession());
                 responseArea.setText(response);
                 saved.set(true);
             });

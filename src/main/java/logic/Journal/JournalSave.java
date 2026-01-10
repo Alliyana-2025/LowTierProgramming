@@ -6,7 +6,7 @@ import java.io.*;
 import logic.loginDatabase.*;
 import API.GeminiAPI;
 
-public class JournalPage {
+public class JournalSave {
     private static final String JOURNAL_FILE = "data" + File.separator + "journals.txt";
 
     public static String saveJournals(String title, String journalText, UserSession session) {

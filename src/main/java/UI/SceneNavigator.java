@@ -8,7 +8,6 @@ import javafx.scene.control.Alert;
 import javafx.stage.Stage;
 import logic.Journal.JournalEntries;
 import logic.Journal.JournalHubPage;
-import logic.Journal.JournalIntroPage;
 import logic.Journal.JournalList;
 import logic.Journal.JournalMode;
 import logic.Journal.JournalView;
@@ -83,10 +82,6 @@ public class SceneNavigator {
     public void goToWelcome() {
         System.out.println("trying to go to welcome page");
         switchScene(new WelcomePage(stage, this, mode, entry).getScene());
-    }
-
-    public void goToJournalIntro() {
-        switchScene(new JournalIntroPage(stage, this).getScene());
     }
 
     public void goToJournalHub() {

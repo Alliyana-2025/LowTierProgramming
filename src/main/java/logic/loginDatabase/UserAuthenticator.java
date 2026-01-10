@@ -5,6 +5,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import javafx.scene.control.Alert;
+
 public class UserAuthenticator {
     
     private DatabaseManager dbManager;
@@ -35,7 +37,7 @@ public class UserAuthenticator {
             }
             
         } catch (SQLException e) {
-            System.err.println("Database error during authentication");
+            new Alert(Alert.AlertType.WARNING, "Wrong username or password! Please try again.").show();
             e.printStackTrace();
         }
         
@@ -63,6 +65,7 @@ public class UserAuthenticator {
                 }
             }
         } catch (SQLException e) {
+            new Alert(Alert.AlertType.WARNING, "User not found!").show();
             e.printStackTrace();
         }
         return null;
@@ -76,31 +79,31 @@ public class UserAuthenticator {
         
         // 1. Validate email format
         if (!isValidEmail(email)) {
-            System.out.println("Invalid email format. Please enter a valid email address.");
+            new Alert(Alert.AlertType.INFORMATION,"Invalid email format. Please enter a valid email address.").show();;
             return;
         }
         
         // 2. Hash password
         if (hashedPassword == null) {
-            System.out.println("Password hashing failed. Registration aborted.");
+            new Alert(Alert.AlertType.INFORMATION,"Password hashing failed. Registration aborted.").show();;
             return;
         }
         
         // 3. Check if user already exists
         if (isUsernameExists(username)) {
-            System.out.println("Username already taken. Please choose a different username.");
+            new Alert(Alert.AlertType.INFORMATION,"Username already taken. Please choose a different username.").show();
             return;
         }
         
         // 4. Check if email already exists
         if (isEmailExists(email)) {
-            System.out.println("Email already registered. Please use a different email.");
+            new Alert(Alert.AlertType.INFORMATION, "Email already registered. Please use a different email.").show();
             return;
         }
         
         // 5. Validate date format
         if (!isValidDate(dateOfBirth)) {
-            System.out.println("Invalid date format. Please use YYYY-MM-DD format.");
+            new Alert(Alert.AlertType.INFORMATION,"Invalid date format. Please use YYYY-MM-DD format.").show();
             return;
         }
         
@@ -126,16 +129,11 @@ public class UserAuthenticator {
             }
             
             int rowsAffected = pstmt.executeUpdate();
-            if (rowsAffected > 0) {
-                System.out.println("User registered successfully!");
-            } else {
-                System.out.println("Registration failed.");
-            }
             
         } catch (IllegalArgumentException e) {
-            System.out.println("Invalid date format. Please use YYYY-MM-DD.");
+            new Alert(Alert.AlertType.WARNING, "Invalid date format. Please use YYYY-MM-DD.").show();
         } catch (SQLException e) {
-            System.err.println("Database error during registration");
+            new Alert(Alert.AlertType.WARNING, "Database error during registration").show();
             e.printStackTrace();
         }
     }
@@ -176,7 +174,7 @@ public class UserAuthenticator {
             }
             
         } catch (SQLException e) {
-            System.err.println("Database error checking email existence");
+            new Alert(Alert.AlertType.WARNING, "Database error checking email existence").show();
             e.printStackTrace();
         }
         
@@ -199,7 +197,7 @@ public class UserAuthenticator {
             }
             
         } catch (SQLException e) {
-            System.err.println("Database error checking username existence");
+            new Alert(Alert.AlertType.WARNING, "Database error checking username existence").show();
             e.printStackTrace();
         }
         

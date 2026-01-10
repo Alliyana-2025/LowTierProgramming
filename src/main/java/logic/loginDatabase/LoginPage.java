@@ -246,7 +246,7 @@ public class LoginPage {
                 } catch (IOException ex) {
                     ex.printStackTrace();
                 } navigator.goToWelcome();
-            }
+            } else new Alert(Alert.AlertType.WARNING, "Wrong username or password! Please try again.").show();
         });
 
         form.getChildren().addAll(emailBox, passwordBox, submitBtn);

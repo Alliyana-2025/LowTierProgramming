@@ -11,6 +11,9 @@ import java.nio.charset.StandardCharsets;
 
 import com.google.gson.Gson;
 
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
+
 public class WeatherAPI {
         /**
      * Sends a GET request to the specified API URL.
@@ -107,6 +110,7 @@ public class WeatherAPI {
 
             return Arrays.asList(results);
         } catch (Exception e) {
+            new Alert(Alert.AlertType.WARNING, "No locations found!").show();
             throw new RuntimeException("Failed to search locations", e);
         }
     }
@@ -118,6 +122,7 @@ public class WeatherAPI {
 
             return GSON.fromJson(json, WeatherResponse.class);
         } catch (Exception e) {
+            new Alert(Alert.AlertType.WARNING, "Failed to fetch weather data").show();
             throw new RuntimeException("Failed to fetch weather data", e);
         }
     }
@@ -135,7 +140,7 @@ public class WeatherAPI {
                 cachedWeather = getWeather(lat, lon);
                 lastFetchTime = now;
             } catch (Exception e) {
-                System.err.println("Failed to fetch new weather data, using cached value if available");
+                new Alert(Alert.AlertType.WARNING, "Failed to fetch weather data. Using cached if available.").show();
                 if (cachedWeather == null) throw e;
             }
         }

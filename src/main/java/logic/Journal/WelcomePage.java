@@ -65,10 +65,8 @@ public class WelcomePage {
         logoBox.setAlignment(Pos.CENTER_LEFT);
 
         Button homeBtn = navButton("Home", "house.png", true);
-        //Button newEntryBtn = navButton("New Entry", "pencil.png", false);
         Button journalBtn = navButton("My Journal", "book-open.png", false);
 
-        //newEntryBtn.setOnAction(e -> navigator.goToJournalCreate());
         journalBtn.setOnAction(e -> navigator.goToJournalHub());
 
         Region spacer = new Region();
@@ -97,7 +95,6 @@ public class WelcomePage {
         sidebar.getChildren().addAll(
             logoBox,
             homeBtn,
-            //newEntryBtn,
             journalBtn,
             spacer,
             quoteBox

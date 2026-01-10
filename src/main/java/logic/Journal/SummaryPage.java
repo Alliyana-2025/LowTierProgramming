@@ -148,7 +148,7 @@ public class SummaryPage {
 
         // pulling 7 days worth of journal entries
         if (lastSevenEntries.isEmpty()) {
-            System.out.println("No journal entries found.");
+            new Alert(Alert.AlertType.WARNING, "No journal entries found!").show();
         }
 
         // calling gemini AI for summary
