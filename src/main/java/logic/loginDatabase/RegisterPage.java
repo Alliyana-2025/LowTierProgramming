@@ -1,9 +1,10 @@
-package UI;
+package logic.loginDatabase;
 
 import java.util.List;
 
 import API.WeatherAPI;
 import API.WeatherAPI.GeoLocation;
+import UI.SceneNavigator;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -13,16 +14,13 @@ import javafx.scene.effect.GaussianBlur;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
 import javafx.stage.Stage;
-import logic.loginDatabase.UserAuthenticator;
 
 public class RegisterPage {
 
     private Scene scene;
     private final Stage stage;
     private final SceneNavigator navigator;
-    private String activeTab = "register";
 
     // fields
     private TextField emailField;
@@ -263,8 +261,6 @@ public class RegisterPage {
 
     private void handleRegister() {
         UserAuthenticator auth = new UserAuthenticator();
-        WeatherAPI api = new WeatherAPI();
-
         if (
             emailField.getText().isEmpty() ||
             usernameField.getText().isEmpty() ||

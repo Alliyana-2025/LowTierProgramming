@@ -1,5 +1,6 @@
-package UI;
+package logic.Journal;
 
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -14,23 +15,23 @@ import javafx.scene.text.Font;
 import javafx.scene.Cursor;
 import javafx.stage.Stage;
 
-import logic.Journal.JournalManager;
-import logic.Journal.JournalPage;
-import logic.loginDatabase.UserSession;
-
 import java.time.LocalDate;
 
-import com.mysql.cj.conf.BooleanProperty;
+import UI.SceneNavigator;
 
-public class JournalCreatePage {
+public class JournalView {
 
     private Scene scene;
     private final Stage stage;
     private final SceneNavigator navigator;
+    private final JournalMode mode;
+    private final JournalEntries entry;
 
-    public JournalCreatePage(Stage stage, SceneNavigator navigator) {
+    public JournalView(Stage stage, SceneNavigator navigator, JournalMode mode, JournalEntries entry) {
         this.stage = stage;
         this.navigator = navigator;
+        this.mode = mode;
+        this.entry = entry;
 
         /* ================= ROOT ================= */
         VBox root = new VBox(30);
@@ -95,7 +96,7 @@ public class JournalCreatePage {
             "-fx-background-radius: 16;" +
             "-fx-padding: 8 20;"
         );
-        backBtn.setOnAction(e -> navigator.goToJournalDates());
+        backBtn.setOnAction(e -> navigator.goToJournalList());
 
         StackPane.setAlignment(backBtn, Pos.TOP_RIGHT);
         StackPane.setMargin(backBtn, new Insets(20));
@@ -127,15 +128,25 @@ public class JournalCreatePage {
         pencilIcon.setFitWidth(20);
         pencilIcon.setFitHeight(20);
 
-        Label titleLabel = new Label("Create Journal Entry");
+        Label titleLabel = new Label("");
         titleLabel.setFont(Font.font("Segoe UI", 18));
         titleLabel.setTextFill(Color.web("#581C87"));
 
+        if (mode == JournalMode.VIEW) {
+            titleLabel.setText("View Journal Entry");
+        }
+        if (mode == JournalMode.CREATE) {
+            titleLabel.setText("Create Journal Entry");
+        }
+        if (mode == JournalMode.EDIT) {
+            titleLabel.setText("Edit Journal Entry");
+        }
+
         titleRowForm.getChildren().addAll(pencilIcon, titleLabel);
 
-        Label dateLabel = new Label("📅 " + LocalDate.now());
+        Label dateLabel = new Label("📅 " + (entry != null ? entry.getDate() : LocalDate.now()));
         dateLabel.setTextFill(Color.GRAY);
-
+        
         /* ===== TITLE FIELD ===== */
         TextField titleField = new TextField();
         titleField.setPromptText("Journal title...");
@@ -182,28 +193,57 @@ public class JournalCreatePage {
 
         summaryRow.getChildren().addAll(starIcon, summaryLabel);
 
-        Label responseLabel = new Label("");
-        responseLabel.setFont(Font.font("Segoe UI", 14));
-        responseLabel.setTextFill(Color.BLACK);
+        TextArea responseArea = new TextArea();
+        responseArea.setWrapText(true);
+        responseArea.setEditable(false);
+        responseArea.setFocusTraversable(false);
+        responseArea.setText("");
 
-        javafx.beans.property.BooleanProperty saved = new SimpleBooleanProperty(false);
-        saveBtn.setOnAction(e -> {
-            if (titleField.getText().isEmpty() || journalArea.getText().isEmpty()) {
-                new Alert(Alert.AlertType.WARNING,
-                    "Please fill in both journal title and content."
-                ).show();
-                return;
-            }
-            String response = JournalPage.saveJournals(titleField.getText(),journalArea.getText(), navigator.getSession());
-            responseLabel.setText(response);
-            saved.set(true);    
-        });
-
-        saveBtn.disableProperty().bind(
-            titleField.textProperty().isEmpty()
-                .or(journalArea.textProperty().isEmpty())
-                .or(saved)
+        responseArea.setFont(Font.font("Segoe UI", 14));
+        responseArea.setStyle(
+            "-fx-background-radius: 10;" +
+            "-fx-border-radius: 10;" +
+            "-fx-control-inner-background: #F9F5FF;"
         );
+        responseArea.setPrefRowCount(3);
+
+        HBox responseRow = new HBox(responseArea);
+        HBox.setHgrow(responseArea, Priority.ALWAYS);
+
+        if (mode == JournalMode.EDIT) {
+            titleField.setText(entry.getTitle());
+            journalArea.setText(entry.getJournalEntry());
+        }
+        if (mode == JournalMode.VIEW) {
+            titleField.setText(entry.getTitle());
+            journalArea.setText(entry.getJournalEntry());
+            responseArea.setText(entry.getSentiment());
+            titleField.setEditable(false);
+            journalArea.setEditable(false);
+            saveBtn.setDisable(true);
+            saveBtn.setText("View Only");
+        }
+
+        BooleanProperty saved = new SimpleBooleanProperty(false);
+        if (mode != JournalMode.VIEW) {
+            saveBtn.setOnAction(e -> {
+                if (titleField.getText().isEmpty() || journalArea.getText().isEmpty()) {
+                    new Alert(Alert.AlertType.WARNING,
+                        "Please fill in both journal title and content."
+                    ).show();
+                    return;
+                }
+                String response = JournalPage.saveJournals(titleField.getText(),journalArea.getText(), navigator.getSession());
+                responseArea.setText(response);
+                saved.set(true);
+            });
+
+            saveBtn.disableProperty().bind(
+                titleField.textProperty().isEmpty()
+                    .or(journalArea.textProperty().isEmpty())
+                    .or(saved)
+            );
+        }
 
         /* ===== ASSEMBLE ===== */
         card.getChildren().addAll(
@@ -212,7 +252,7 @@ public class JournalCreatePage {
             titleField,
             journalArea,
             summaryRow,
-            responseLabel,
+            responseRow,
             saveBtn
         );
 

@@ -4,7 +4,6 @@ import java.util.*;
 import com.google.genai.Client;
 import com.google.genai.types.GenerateContentResponse;
 
-import API.WeatherAPI.WeatherResponse;
 import logic.loginDatabase.UserSession;
 
 public class GeminiAPI {

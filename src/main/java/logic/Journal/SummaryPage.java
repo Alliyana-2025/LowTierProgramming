@@ -1,17 +1,16 @@
-package UI;
+package logic.Journal;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import API.GeminiAPI;
+import UI.SceneNavigator;
+import javafx.concurrent.Task;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.chart.*;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.effect.DropShadow;
@@ -23,13 +22,12 @@ import javafx.scene.text.Font;
 import javafx.scene.Cursor;
 import javafx.stage.Stage;
 
-import logic.summaryLogic.SummaryLogic;;
-
 public class SummaryPage {
 
     private Scene scene;
     private final Stage stage;
     private final SceneNavigator navigator;
+    private final List<JournalEntries> lastSevenEntries = JournalList.getJournalEntries();
 
     public SummaryPage(Stage stage, SceneNavigator navigator) {
         this.stage = stage;
@@ -91,7 +89,7 @@ public class SummaryPage {
         /* ================= CHART ================= */
 
         CategoryAxis xAxis = new CategoryAxis();
-        NumberAxis yAxis = new NumberAxis(1, 5, 1);
+        NumberAxis yAxis = new NumberAxis(1, 10, 1);
 
         LineChart<String, Number> moodChart =
             new LineChart<>(xAxis, yAxis);
@@ -100,11 +98,18 @@ public class SummaryPage {
         moodChart.setPrefHeight(260);
 
         XYChart.Series<String, Number> series = new XYChart.Series<>();
-        series.getData().add(new XYChart.Data<>("Mon", 3));
-        series.getData().add(new XYChart.Data<>("Tue", 4));
-        series.getData().add(new XYChart.Data<>("Wed", 2));
-        series.getData().add(new XYChart.Data<>("Thu", 5));
-        series.getData().add(new XYChart.Data<>("Fri", 4));
+
+        Collections.reverse(lastSevenEntries);
+        for (JournalEntries entry : lastSevenEntries) {
+            try {
+                int rating = Integer.parseInt(entry.getRating());
+                String label = entry.getDate();
+                series.getData().add(new XYChart.Data<>(label, rating));
+            } catch (NumberFormatException e) {
+                new Alert(Alert.AlertType.WARNING, "Couldn't produce mood graph!");
+            }
+        }
+
         moodChart.getData().add(series);
 
         ImageView summaryIcon = new ImageView(
@@ -142,16 +147,10 @@ public class SummaryPage {
         insightTitle.setAlignment(Pos.CENTER_LEFT);
 
         // pulling 7 days worth of journal entries
-        List<String> lastSevenEntries = readLastSevenEntries("data"+File.separator+"journals.txt");
         if (lastSevenEntries.isEmpty()) {
             System.out.println("No journal entries found.");
         }
 
-        StringBuilder combinedEntries = new StringBuilder();
-        for (String entry : lastSevenEntries) {
-            combinedEntries.append(entry).append("\n---\n");
-        }
-        
         // calling gemini AI for summary
 
         GeminiAPI api = new GeminiAPI();
@@ -161,13 +160,21 @@ public class SummaryPage {
                         + "Do not include the user's data EXCEPT the name, inside the response text "
                         + "Suggest improvements that the user can implement to improve their mood and coming weeks based on their data/profile. "
                         + "Write in less than 100 words. \n"
-                        + combinedEntries + "\n"
+                        + lastSevenEntries.toString() + "\n"
                         + navigator.getSession();
-        String weeklyInsight = api.getSummaryForSession(prompt, navigator.getSession());
+        Task<String> task = new Task<>() {
+            @Override
+            protected String call() {
+                return api.getSummaryForSession(prompt, navigator.getSession());
+            }
+        };        
 
-        Label insightText = new Label(weeklyInsight);
+        Label insightText = new Label("");
         insightText.setWrapText(true);
         insightText.setTextFill(Color.GRAY);
+
+        task.setOnSucceeded(ev -> insightText.setText(task.getValue()));
+        new Thread(task).start();
 
         VBox insightCard = new VBox(12, insightTitle, insightText);
         insightCard.setPadding(new Insets(30));
@@ -186,30 +193,6 @@ public class SummaryPage {
         );
 
         scene = new Scene(root, stage.getWidth(), stage.getHeight());
-    }
-
-    //helper func to read and combine entries
-    private static List<String> readLastSevenEntries(String filePath) {
-        List<String> entries = new ArrayList<>();
-        try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
-            String line;
-            StringBuilder currentEntry = new StringBuilder();
-            while ((line = br.readLine()) != null) {
-                if (line.startsWith("DATE: ")) {
-                    if (currentEntry.length() > 0) {
-                        entries.add(currentEntry.toString().trim());
-                        currentEntry.setLength(0);
-                    }
-                }
-                currentEntry.append(line).append("\n");
-            }
-            if (currentEntry.length() > 0) entries.add(currentEntry.toString().trim());
-        } catch (IOException e) {
-            System.err.println("Error reading journal file: " + e.getMessage());
-        }
-
-        int size = entries.size();
-        return entries.subList(Math.max(0, size - 7), size);
     }
 
     public Scene getScene() {

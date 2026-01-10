@@ -1,5 +1,6 @@
-package UI;
+package logic.Journal;
 
+import UI.SceneNavigator;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;

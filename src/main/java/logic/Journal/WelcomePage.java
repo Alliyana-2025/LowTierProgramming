@@ -1,9 +1,10 @@
-package UI;
+package logic.Journal;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.chart.*;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.effect.DropShadow;
@@ -13,24 +14,31 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
-import logic.loginDatabase.UserSession;
 
+import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
 
 import API.WeatherAPI;
-import API.WeatherAPI.GeoLocation;
 import API.WeatherAPI.WeatherResponse;
+import UI.SceneNavigator;
 
 public class WelcomePage {
 
     private Scene scene;
     private final Stage stage;
     private final SceneNavigator navigator;
+    private JournalEntries entry;
+    private JournalMode mode;
+    private List<JournalEntries> lastSevenEntries = JournalList.getJournalEntries();
 
-    public WelcomePage(Stage stage, SceneNavigator navigator) {
+    public WelcomePage(Stage stage, SceneNavigator navigator, JournalMode mode, JournalEntries entry) {
         this.stage = stage;
         this.navigator = navigator;
+        this.entry = entry;
+        this.mode = mode;
 
         /* ================= ROOT ================= */
         BorderPane root = new BorderPane();
@@ -130,14 +138,18 @@ public class WelcomePage {
 
         greetBox.getChildren().addAll(greet, sub);
 
-        Button writeBtn = new Button("+ Write New Entry");
+        Button writeBtn = new Button("See Journals");
         writeBtn.setStyle(
             "-fx-background-color: linear-gradient(to right, #8B5CF6, #EC4899);" +
             "-fx-text-fill: white;" +
             "-fx-background-radius: 24;" +
             "-fx-padding: 12 28;"
         );
-        writeBtn.setOnAction(e -> navigator.goToJournalCreate());
+        LocalDate date = LocalDate.now();
+        writeBtn.setOnAction(e -> {
+            navigator.setDate(date);
+            navigator.goToJournalList();
+        });
 
         Region headerSpacer = new Region();
         HBox.setHgrow(headerSpacer, Priority.ALWAYS);
@@ -167,19 +179,29 @@ public class WelcomePage {
         weeklySub.setTextFill(Color.web("#7C3AED"));
 
         CategoryAxis xAxis = new CategoryAxis();
-        NumberAxis yAxis = new NumberAxis(0, 10, 2);
+        NumberAxis yAxis = new NumberAxis(1, 10, 1);
 
-        LineChart<String, Number> chart = new LineChart<>(xAxis, yAxis);
-        chart.setLegendVisible(false);
-        chart.setAnimated(false);
-        chart.setPrefHeight(260);
+        LineChart<String, Number> moodChart =
+            new LineChart<>(xAxis, yAxis);
+        moodChart.setLegendVisible(false);
+        moodChart.setAnimated(false);
+        moodChart.setPrefHeight(260);
 
         XYChart.Series<String, Number> series = new XYChart.Series<>();
-        series.getData().add(new XYChart.Data<>("Thu", 8));
-        series.getData().add(new XYChart.Data<>("Fri", 4));
-        chart.getData().add(series);
 
-        weeklyCard.getChildren().addAll(weeklyTitle, weeklySub, chart);
+        Collections.reverse(lastSevenEntries);
+        for (JournalEntries ent : lastSevenEntries) {
+            try {
+                int rating = Integer.parseInt(ent.getRating());
+                String label = ent.getDate();
+                series.getData().add(new XYChart.Data<>(label, rating));
+            } catch (NumberFormatException e) {
+                new Alert(Alert.AlertType.WARNING, "Couldn't produce mood graph!");
+            }
+        }
+        moodChart.getData().add(series);
+
+        weeklyCard.getChildren().addAll(weeklyTitle, weeklySub, moodChart);
 
         /* ===== WEATHER CARD ===== */
         WeatherAPI api = new WeatherAPI();
@@ -262,7 +284,7 @@ public class WelcomePage {
     }
 
     /* ================= HELPERS ================= */
-    private Button navButton(String text, String icon, boolean active) {
+    private Button  navButton(String text, String icon, boolean active) {
         ImageView iconView = new ImageView(
             new Image(getClass().getResourceAsStream("/images/" + icon))
         );

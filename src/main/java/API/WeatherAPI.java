@@ -11,8 +11,6 @@ import java.nio.charset.StandardCharsets;
 
 import com.google.gson.Gson;
 
-import logic.loginDatabase.UserSession;
-
 public class WeatherAPI {
         /**
      * Sends a GET request to the specified API URL.
@@ -50,8 +48,6 @@ public class WeatherAPI {
     //some variables thats getting reused
     private static final String API_KEY = EnvLoader.loadEnv("data/.env").get("OPENWEATHER_TOKEN");
     private static final Gson GSON = new Gson();
-    private static String userLocation = "";
-    private static int choice = 0;
 
     //weather model to get the actual geolocation
     public static class GeoLocation {
@@ -126,38 +122,6 @@ public class WeatherAPI {
         }
     }
 
-    public GeoLocation userLocationRegistration(GeoLocation location) {
-        Scanner sc = new Scanner(System.in);
-        if (userLocation.isEmpty()) {
-            System.out.println("Where do you live? Enter a location:");
-            userLocation = sc.nextLine();
-        }
-
-        List<GeoLocation> locations = searchLocations(userLocation);
-
-        if (locations.isEmpty()) {
-            System.out.println("No locations found!");
-            return null;
-        }
-
-        if (choice == 0) {
-            for (int i = 0; i < locations.size(); i++) {
-                System.out.println((i+1) + ". " + locations.get(i));
-            }
-
-            while (true) {
-                System.out.print("\nEnter choice: ");
-                choice = Integer.parseInt(sc.nextLine());
-                if (choice > locations.size()) {
-                    System.out.print("Invalid input. Try again");
-                    continue;
-                } else break;
-            }
-        }
-        GeoLocation selected = locations.get(choice-1);
-        return selected;
-    }
-
     //caching data to avoid unnecessary calls
     private WeatherResponse cachedWeather = null;
     private long lastFetchTime = 0;
@@ -176,15 +140,5 @@ public class WeatherAPI {
             }
         }
         return cachedWeather;
-    }    
-
-    public void displayWeather(UserSession session) {
-        WeatherResponse response = getWeatherCached(session.lat, session.lon);
-
-        System.out.println("Location: "+response.name+", "+response.sys.country);
-        System.out.println("Temperature: "+response.main.temp+"C");
-        System.out.println("Feels like: "+response.main.feels_like+"C");
-        System.out.println("Humidity: "+response.main.humidity+"%");
-        System.out.println("Condition: "+response.weather[0].description);
     }
 }

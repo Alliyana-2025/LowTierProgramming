@@ -1,10 +1,21 @@
 package UI;
 
+import java.time.LocalDate;
+
 import API.WeatherAPI;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
-import javafx.scene.control.Alert.AlertType;
 import javafx.stage.Stage;
+import logic.Journal.JournalEntries;
+import logic.Journal.JournalHubPage;
+import logic.Journal.JournalIntroPage;
+import logic.Journal.JournalList;
+import logic.Journal.JournalMode;
+import logic.Journal.JournalView;
+import logic.Journal.SummaryPage;
+import logic.Journal.WelcomePage;
+import logic.loginDatabase.LoginPage;
+import logic.loginDatabase.RegisterPage;
 import logic.loginDatabase.UserAuthenticator;
 import logic.loginDatabase.UserSession;
 
@@ -12,7 +23,10 @@ public class SceneNavigator {
 
     private final Stage stage;
     private static boolean wasMaximized = true;
+    private LocalDate date;
     private UserSession session;
+    private JournalMode mode;
+    private JournalEntries entry;
 
     public void setSession(String emailOrUsername) {
         UserAuthenticator auth = new UserAuthenticator();
@@ -28,6 +42,15 @@ public class SceneNavigator {
     public UserSession getSession() {
         return session;
     }
+
+    public void setDate(LocalDate date) { this.date = date; }
+    public LocalDate getDate() { return date; }
+
+    public void setMode(JournalMode mode) { this.mode = mode; }
+    public JournalMode getMode() { return mode; }
+
+    public void setEntry(JournalEntries entry) { this.entry = entry; }
+    public JournalEntries getEntry() { return entry; }
 
     public SceneNavigator(Stage stage) {
         this.stage = stage;
@@ -59,7 +82,7 @@ public class SceneNavigator {
 
     public void goToWelcome() {
         System.out.println("trying to go to welcome page");
-        switchScene(new WelcomePage(stage, this).getScene());
+        switchScene(new WelcomePage(stage, this, mode, entry).getScene());
     }
 
     public void goToJournalIntro() {
@@ -70,16 +93,12 @@ public class SceneNavigator {
         switchScene(new JournalHubPage(stage, this).getScene());
     }
 
-    public void goToJournalDates() {
-        switchScene(new JournalDatesPage(stage, this).getScene());
+    public void goToJournalList() {
+        switchScene(new JournalList(stage, this).getScene());
     }
 
     public void goToJournalView() {
-        switchScene(new JournalViewPage(stage, this).getScene());
-    }
-
-    public void goToJournalCreate() {
-        switchScene(new JournalCreatePage(stage, this).getScene());
+        switchScene(new JournalView(stage, this, mode, entry).getScene());
     }
 
     public void goToSummary() {

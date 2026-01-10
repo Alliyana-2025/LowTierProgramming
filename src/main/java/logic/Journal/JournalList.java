@@ -1,8 +1,19 @@
-package UI;
+package logic.Journal;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import UI.SceneNavigator;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
@@ -15,13 +26,14 @@ import javafx.scene.text.Font;
 import javafx.scene.Cursor;
 import javafx.stage.Stage;
 
-public class JournalDatesPage {
+public class JournalList {
 
     private Scene scene;
     private final Stage stage;
     private final SceneNavigator navigator;
+    private List<JournalEntries> entries = getJournalEntries();
 
-    public JournalDatesPage(Stage stage, SceneNavigator navigator) {
+    public JournalList(Stage stage, SceneNavigator navigator) {
         this.stage = stage;
         this.navigator = navigator;
 
@@ -129,7 +141,7 @@ public class JournalDatesPage {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        Button addBtn = new Button("➕ Add Journal");
+        Button addBtn = new Button("");
         addBtn.setCursor(Cursor.HAND);
         addBtn.setStyle(
             "-fx-background-color: linear-gradient(to right, #8B5CF6, #7C3AED);" +
@@ -139,7 +151,20 @@ public class JournalDatesPage {
             "-fx-background-radius: 18;" +
             "-fx-padding: 6 16;"
         );
-        addBtn.setOnAction(e -> navigator.goToJournalCreate());
+
+        JournalEntries todayEntry = entries.stream()
+            .filter(e -> e.getDate().equals(LocalDate.now().toString()))
+            .findFirst()
+            .orElse(null);
+
+        JournalMode mode = todayEntry == null ? JournalMode.CREATE : JournalMode.EDIT;
+
+        addBtn.setText(todayEntry == null ? "➕ Add Journal" : "✏ Edit Journal");
+        addBtn.setOnAction(e -> {
+            navigator.setMode(mode);
+            navigator.setEntry(todayEntry);
+            navigator.goToJournalView();
+        });
 
         ImageView ribbonIcon = new ImageView(
             new Image(getClass().getResourceAsStream("/images/pita.png"))
@@ -179,10 +204,10 @@ public class JournalDatesPage {
 
         /* ===== JOURNAL LIST ===== */
         VBox journalList = new VBox(15);
-        journalList.getChildren().addAll(
-            createJournalCard("December 20, 2025", "2026-01-05"),
-            createJournalCard("My Second Journal", "2026-01-04")
-        );
+
+        for (JournalEntries entry : entries) {
+            journalList.getChildren().add(createJournalCard(entry));
+        }
 
         ScrollPane scrollPane = new ScrollPane(journalList);
         scrollPane.setFitToWidth(true);
@@ -218,7 +243,7 @@ public class JournalDatesPage {
     }
 
     /* ================= JOURNAL CARD ================= */
-    private HBox createJournalCard(String title, String date) {
+    private HBox createJournalCard(JournalEntries entry) {
 
         HBox dateCard = new HBox(15);
         dateCard.setAlignment(Pos.CENTER_LEFT);
@@ -245,11 +270,11 @@ public class JournalDatesPage {
 
 
         VBox dateInfo = new VBox(6);
-        Label dateText = new Label(title);
+        Label dateText = new Label(entry.getTitle());
         dateText.setFont(Font.font("Segoe UI", 16));
         dateText.setTextFill(Color.web("#581C87"));
 
-        Label isoDate = new Label(date);
+        Label isoDate = new Label(entry.getDate());
         isoDate.setFont(Font.font(12));
         isoDate.setTextFill(Color.web("#7C3AED"));
 
@@ -257,40 +282,95 @@ public class JournalDatesPage {
         HBox.setHgrow(dateInfo, Priority.ALWAYS);
 
         /* ===== ACTION ICONS (PNG) ===== */
-        ImageView editIcon = new ImageView(
-            new Image(getClass().getResourceAsStream("/images/edit.png"))
+        ImageView viewIcon = new ImageView(
+            new Image(getClass().getResourceAsStream("/images/eye-open.png"))
         );
-        editIcon.setFitWidth(18);
-        editIcon.setFitHeight(18);
+        viewIcon.setFitWidth(24);
+        viewIcon.setFitHeight(24);
 
-        ImageView deleteIcon = new ImageView(
-            new Image(getClass().getResourceAsStream("/images/delete.png"))
-        );
-        deleteIcon.setFitWidth(18);
-        deleteIcon.setFitHeight(18);
+        LocalDate parsedDate = LocalDate.parse(entry.getDate());
 
-        Button editBtn = new Button("", editIcon);
-        Button deleteBtn = new Button("", deleteIcon);
-
-        editBtn.setCursor(Cursor.HAND);
-        deleteBtn.setCursor(Cursor.HAND);
-
-        editBtn.setStyle("-fx-background-color: transparent;");
-        deleteBtn.setStyle("-fx-background-color: transparent;");
-
-        editBtn.setOnAction(e -> navigator.goToJournalCreate());
-
-        deleteBtn.setOnAction(e -> {
-            dateCard.setVisible(false);
-            dateCard.setManaged(false);
+        Button viewBtn = new Button("", viewIcon);
+        viewBtn.setCursor(Cursor.HAND);
+        viewBtn.setStyle("-fx-background-color: transparent;");
+        viewBtn.setOnAction(e -> {
+            navigator.setMode(JournalMode.VIEW);
+            navigator.setEntry(entry);
+            navigator.setDate(parsedDate);
+            navigator.goToJournalView();
         });
 
-        HBox actions = new HBox(10, editBtn, deleteBtn);
+        HBox actions = new HBox(viewBtn);
 
         dateCard.getChildren().addAll(circleIcon, dateInfo, actions);
 
         return dateCard;
     }
+
+    public static List<JournalEntries> getJournalEntries() {
+        List<JournalEntries> entries = new ArrayList<>();
+        try (BufferedReader br = new BufferedReader(new FileReader("data" + File.separator + "journals.txt"))) {
+            String line;
+            String title = null;
+            String date = null;
+            StringBuilder journal = new StringBuilder();
+            StringBuilder sentiment = new StringBuilder();
+            String rating = null;
+
+            while ((line = br.readLine()) != null) {
+                line = line.trim();
+
+                if (line.startsWith("TITLE:")) {
+                    title = line.replace("TITLE:", "").trim();
+                } else if (line.startsWith("DATE:")) {
+                    date = line.replace("DATE:", "").trim();
+                } else if (line.startsWith("JOURNAL:")) {
+                    journal.setLength(0);
+                    journal.append(line.replace("JOURNAL:", "").trim());
+                } else if (line.startsWith("SENTIMENT:")) {
+                    sentiment.setLength(0);
+                    sentiment.append(line.replace("SENTIMENT:", "").trim());
+                } else if (line.startsWith("RATING:")) {
+                    rating = line.replace("RATING:", "").trim();
+                } else if (line.startsWith("---------------------")) {
+                    if (title != null && date != null) {
+                        entries.add(new JournalEntries(
+                            date,
+                            title,
+                            journal.toString().trim(),
+                            sentiment.toString().trim(),
+                            rating
+                        ));
+                    }
+                    title = null;
+                    date = null;
+                    journal.setLength(0);
+                    sentiment.setLength(0);
+                } else {
+                    // If multiline journal or sentiment, append the line
+                    if (journal.length() > 0 && sentiment.length() == 0) {
+                        journal.append("\n").append(line);
+                    } else if (sentiment.length() > 0) {
+                        sentiment.append("\n").append(line);
+                    }
+                }
+            }
+            if (title != null && date != null) {
+                entries.add(new JournalEntries(
+                    date,
+                    title,
+                    journal.toString().trim(),
+                    sentiment.toString().trim(),
+                    rating
+                ));
+            }
+        } catch (IOException e) {
+            new Alert(Alert.AlertType.WARNING, "Couldn't fetch journal entries!").show();
+        }
+        Collections.reverse(entries);
+        return entries;
+    }
+
 
     public Scene getScene() {
         return scene;

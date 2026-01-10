@@ -182,16 +182,6 @@ public class UserAuthenticator {
         
         return false;
     }
-    
-// === STEP 1 FIX: method untuk ambil username saja ===
-public String getUsername(String emailOrUsername) {
-    UserSession session = getUserData(emailOrUsername);
-    if (session != null) {
-        return session.username;
-    }
-    return emailOrUsername; // fallback kalau gagal
-}
-
 
     // Check if username exists in database
     private boolean isUsernameExists(String username) {
