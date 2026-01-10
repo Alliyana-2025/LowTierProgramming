@@ -140,7 +140,7 @@ public class LoginPage {
 
         /* ================= EMAIL ================= */
         VBox emailBox = new VBox(5);
-        Label emailLabel = new Label("Email Address");
+        Label emailLabel = new Label("Email Address or Username");
 
         TextField emailField = new TextField();
         emailField.setPromptText("Email");
