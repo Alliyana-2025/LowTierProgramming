@@ -32,5 +32,6 @@ public class GeminiAPI {
         String freshSummary = geminiResponse(prompt);
         session.setCachedSummary(freshSummary);
         return freshSummary;
+        
     } 
 }
